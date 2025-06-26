@@ -8,63 +8,69 @@ import ChartLine from "../components/ChartLine";
 import ChartBar from "../components/ChartBar";
 import ChartPie from "../components/ChartPie";
 import TableKpi from "../components/TableKpi";
-
 import {
-  divisions as allDivisions,
+  divisions,
+  kpiData,
   KpiDataItem,
-  kpiData as allKpiData, // seluruh data dummy
-  KpiTotal,
-  kpiTotals as allKpiTotals,
   Division,
 } from "../../lib/mockData";
 
 export default function DashboardPage() {
-  // --- State untuk filter dropdown ---
-  const [divisions, setDivisions] = useState<Division[]>([]);
+  // 1. Filter state
+  const [divs, setDivs] = useState<Division[]>([]);
   const [selectedDivision, setSelectedDivision] = useState<number | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<number>(6); // default 6 supaya ada data
-  const [selectedYear, setSelectedYear] = useState<number>(2025); // default 2025
+  const [selectedMonth, setSelectedMonth] = useState<number>(6);
+  const [selectedYear, setSelectedYear] = useState<number>(2025);
 
-  // --- State untuk data yang ter‐filter (KPI card, bar, pie, table) ---
-  const [kpiDataFiltered, setKpiDataFiltered] = useState<KpiDataItem[]>([]);
-  const [kpiTotalsFiltered, setKpiTotalsFiltered] = useState<KpiTotal[]>([]);
+  // 2. Filtered KPI entries and totals
+  const [filteredData, setFilteredData] = useState<KpiDataItem[]>([]);
+  const [summaryTotals, setSummaryTotals] = useState<
+    { divisionId: number; divisionName: string; totalValue: number }[]
+  >([]);
 
-  // Inisialisasi daftar divisi
+  // init divisions
   useEffect(() => {
-    setDivisions(allDivisions);
+    setDivs(divisions);
   }, []);
 
-  // Jalankan filter setiap kali dropdown berubah
+  // re-filter & re-aggregate on filter change
   useEffect(() => {
-    // 1. Filter kpiData berdasarkan selectedMonth, selectedYear, selectedDivision
-    const filtered = allKpiData.filter((d) => {
-      if (d.periodMonth !== selectedMonth || d.periodYear !== selectedYear) {
+    // filter entries
+    const fd = kpiData.filter((d) => {
+      if (d.periodMonth !== selectedMonth || d.periodYear !== selectedYear)
         return false;
-      }
-      if (selectedDivision && d.divisionId !== selectedDivision) {
-        return false;
-      }
+      if (selectedDivision && d.divisionId !== selectedDivision) return false;
       return true;
     });
-    setKpiDataFiltered(filtered);
+    setFilteredData(fd);
 
-    // 2. Filter kpiTotals (card ringkasan) berdasarkan selectedDivision
-    const filteredTotals = allKpiTotals.filter((t) => t.totalValue > 0);
-    const finalTotals = selectedDivision
-      ? filteredTotals.filter((t) => t.divisionId === selectedDivision)
-      : filteredTotals;
-    setKpiTotalsFiltered(finalTotals);
+    // aggregate totals
+    const acc: Record<number, { divisionName: string; totalValue: number }> = {};
+    fd.forEach((d) => {
+      if (!acc[d.divisionId]) {
+        acc[d.divisionId] = { divisionName: d.divisionName, totalValue: 0 };
+      }
+      acc[d.divisionId].totalValue += d.value;
+    });
+    setSummaryTotals(
+      Object.entries(acc).map(([id, { divisionName, totalValue }]) => ({
+        divisionId: Number(id),
+        divisionName,
+        totalValue,
+      }))
+    );
   }, [selectedDivision, selectedMonth, selectedYear]);
 
   return (
-    <div className="p-4 md:p-8">
-      <h1 className="text-2xl font-bold mb-4">
+    <div className="container mx-auto p-4 md:p-8 space-y-8">
+      {/* Title */}
+      <h1 className="text-2xl font-bold">
         Dashboard KPI Departemen Keuangan & Administrasi
       </h1>
 
-      {/* Filter Panel (Divisi, Bulan, Tahun) */}
+      {/* Filter Panel */}
       <FilterPanel
-        divisions={divisions}
+        divisions={divs}
         selectedDivision={selectedDivision}
         onDivisionChange={setSelectedDivision}
         selectedMonth={selectedMonth}
@@ -73,53 +79,60 @@ export default function DashboardPage() {
         onYearChange={setSelectedYear}
       />
 
-      {/* 1. Line Chart Bulanan (tidak terpengaruh filter) */}
-      <div className="bg-white p-4 rounded-xl shadow mt-6">
-        <h2 className="text-lg font-semibold mb-2">Trend KPI Per Bulan</h2>
-        <ChartLine dataForLine={allKpiData} />
-      </div>
-
-      {/* 2. Ringkasan Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        {kpiTotalsFiltered.length > 0 ? (
-          kpiTotalsFiltered.map((t) => (
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+        {summaryTotals.length > 0 ? (
+          summaryTotals.map((t, i) => (
             <CardSummary
               key={t.divisionId}
               title={t.divisionName}
               value={t.totalValue}
-              unit="(total)"
+              unit=""
+              colorIndex={i}
             />
           ))
         ) : (
-          <p className="col-span-4 text-center text-gray-500">
+          <p className="col-span-full text-center text-gray-500">
             Tidak ada data untuk periode ini.
           </p>
         )}
       </div>
 
-      {/* 3. Bar & Pie Charts + Table */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        {/* Bar chart: perbandingan KPI per divisi */}
-        <div className="bg-white p-4 rounded-xl shadow h-[350px]">
-          <h2 className="text-lg font-semibold mb-2">
-            Perbandingan KPI Antara Divisi (Periode Terpilih)
-          </h2>
-          <ChartBar totals={kpiTotalsFiltered} />
+
+      {/* Trend Line Chart */}
+      <div className="bg-white p-4 rounded-xl shadow">
+        <h2 className="text-lg font-semibold mb-4">Trend KPI Per Bulan</h2>
+        <ChartLine dataForLine={kpiData} />
+      </div>
+
+      {/* Bar & Pie Charts */}
+      {/* Bar & Pie Charts */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Bar Chart Panel */}
+        <div className="bg-white p-4 rounded-xl shadow flex flex-col">
+          <h3 className="text-lg font-semibold mb-3">
+            Perbandingan KPI per Divisi
+          </h3>
+          <ChartBar totals={summaryTotals} />
         </div>
 
-        {/* Pie chart: distribusi KPI */}
-        <div className="bg-white p-4 rounded-xl shadow h-[350px]">
-          <h2 className="text-lg font-semibold mb-2">
-            Distribusi KPI (Periode Terpilih)
-          </h2>
-          <ChartPie data={kpiDataFiltered} />
+        {/* Pie Chart Panel */}
+        <div className="bg-white p-4 rounded-xl shadow flex flex-col">
+          <h3 className="text-lg font-semibold mb-3">Distribusi KPI</h3>
+          <ChartPie
+            data={summaryTotals.map((t) => ({
+              divisionName: t.divisionName,
+              value: t.totalValue,
+            }))}
+          />
         </div>
+      </div>
 
-        {/* Table KPI */}
-        <div className="bg-white p-4 rounded-xl shadow col-span-2">
-          <h2 className="text-lg font-semibold mb-2">Detail Data KPI</h2>
-          <TableKpi data={kpiDataFiltered} />
-        </div>
+
+      {/* Detail Table */}
+      <div className="bg-white p-4 rounded-xl shadow">
+        <h3 className="text-lg font-semibold mb-3">Detail Data KPI</h3>
+        <TableKpi data={filteredData} />
       </div>
     </div>
   );
