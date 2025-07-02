@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card"
 import { ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import rawData, { DataItem } from "./data"
+import rawData, { DataItem } from "../../data"
 
 const chartConfig: ChartConfig = {
   Penetapan: { label: "Penetapan", color: "var(--chart-1)" },

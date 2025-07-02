@@ -2,12 +2,12 @@
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { DataTable } from "@/components/data-table"
-import { ChartRadialATTB } from "@/components/chart-radial-attb"
-import { ChartRadialAO } from "@/components/chart-radial-ao"
+import { ChartRadialATTB } from "@/components/chart/keuangan/chart-radial-attb"
+import { ChartRadialAO } from "@/components/chart/keuangan/chart-radial-ao"
 import { SectionCards } from "@/components/section-cards"
 import { SiteHeader } from "@/components/site-header"
-import { ChartBarStacked } from "@/components/chart-bar-aki"
-import { ChartAreaGradient } from "@/components/chart-area-optimasi"
+import { ChartBarStacked } from "@/components/chart/keuangan/chart-bar-aki"
+import { ChartAreaGradient } from "@/components/chart/keuangan/chart-area-optimasi"
 import {
   SidebarInset,
   SidebarProvider,
