@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   Label,
   PolarRadiusAxis,
@@ -29,14 +30,31 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-const rawData = {
-  "Semester 1": {
-    Target: 7366358457,
-    Realisasi: 7375835136,
+type Semester = "Semester 1" | "Semester 2"
+type SemesterData = { Target: number; Realisasi: number }
+type YearData = Record<Semester, SemesterData>
+type RawData = Record<string, YearData>
+
+const rawData: RawData = {
+  "2024": {
+    "Semester 1": {
+      Target: 7366358457,
+      Realisasi: 7375835136,
+    },
+    "Semester 2": {
+      Target: 6964180930,
+      Realisasi: 7016224951,
+    },
   },
-  "Semester 2": {
-    Target: 6964180930,
-    Realisasi: 7016224951,
+  "2023": {
+    "Semester 1": {
+      Target: 7366358457,
+      Realisasi: 7375835136,
+    },
+    "Semester 2": {
+      Target: 6964180930,
+      Realisasi: 7016224951,
+    },
   },
 }
 
@@ -53,20 +71,21 @@ function formatRupiah(value: number) {
   }).format(value)
 }
 
-export function ChartRadialStacked() {
-  const [view, setView] = React.useState<"Semester 1" | "Semester 2" | "Akumulasi">("Semester 1")
+export function ChartRadialATTB({ tahun }: { tahun: string }) {
+  const [semester, setSemester] = React.useState<Semester | "Akumulasi">("Semester 1")
 
+  const currentYearData = rawData[tahun]
   const currentData =
-    view === "Akumulasi"
+    semester === "Akumulasi"
       ? {
-          Target: rawData["Semester 1"].Target + rawData["Semester 2"].Target,
-          Realisasi: rawData["Semester 1"].Realisasi + rawData["Semester 2"].Realisasi,
+          Target: currentYearData["Semester 1"].Target + currentYearData["Semester 2"].Target,
+          Realisasi: currentYearData["Semester 1"].Realisasi + currentYearData["Semester 2"].Realisasi,
         }
-      : rawData[view]
+      : currentYearData[semester]
 
   const chartData = [
     {
-      name: view,
+      name: semester,
       Target: currentData.Target,
       Realisasi: currentData.Realisasi,
     },
@@ -76,15 +95,15 @@ export function ChartRadialStacked() {
   const formattedPercentage = percentage.toFixed(2) + "%"
 
   return (
-    <Card className="flex flex-col">
-      <CardHeader className="flex flex-row items-start justify-between pb-0">
+    <Card className="flex flex-col w-full">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 pb-0">
         <div>
           <CardTitle>Penarikan ATTB</CardTitle>
-          <CardDescription>{view} - 2024</CardDescription>
+          <CardDescription>{semester} - {tahun}</CardDescription>
         </div>
 
-        <Select value={view} onValueChange={(val) => setView(val as typeof view)}>
-          <SelectTrigger className="w-36">
+        <Select value={semester} onValueChange={(val) => setSemester(val as typeof semester)}>
+          <SelectTrigger className="w-full sm:w-36">
             <SelectValue placeholder="Semester" />
           </SelectTrigger>
           <SelectContent>
@@ -96,7 +115,10 @@ export function ChartRadialStacked() {
       </CardHeader>
 
       <CardContent className="flex flex-1 items-center pb-0">
-        <ChartContainer config={chartConfig} className="mx-auto aspect-square w-full max-w-[300px]">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square w-full max-w-[260px] sm:max-w-[300px]"
+        >
           <RadialBarChart
             data={chartData}
             startAngle={180}
@@ -141,7 +163,7 @@ export function ChartRadialStacked() {
                           y={(viewBox.cy || 0) + 4}
                           className="fill-muted-foreground text-sm"
                         >
-                          {view}
+                          {semester}
                         </tspan>
                       </text>
                     )
@@ -167,16 +189,39 @@ export function ChartRadialStacked() {
         </ChartContainer>
       </CardContent>
 
-      <CardFooter className="mt-[-100px] justify-center gap-4 pt-3 text-xs text-muted-foreground flex-wrap">
+      <CardFooter className="mt-[-80px] justify-center gap-4 pt-3 text-sm text-muted-foreground flex-wrap">
         <div className="flex items-center gap-1">
-          <span className="inline-block size-2 rounded-sm bg-black" />
-          <span>Realisasi:</span>
-          <span className="font-medium text-foreground">{formatRupiah(currentData.Realisasi)}</span>
+          <span className="inline-block size-3 rounded-sm bg-black" />
+          <span>Realisasi :</span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={`realisasi-${tahun}-${semester}-${currentData.Realisasi}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="font-medium text-foreground"
+            >
+              {formatRupiah(currentData.Realisasi)}
+            </motion.span>
+          </AnimatePresence>
         </div>
+
         <div className="flex items-center gap-1">
-          <span className="inline-block size-2 rounded-sm bg-neutral-400" />
-          <span>Target:</span>
-          <span className="font-medium text-foreground">{formatRupiah(currentData.Target)}</span>
+          <span className="inline-block size-3 rounded-sm bg-neutral-400" />
+          <span>Target :</span>
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={`target-${tahun}-${semester}-${currentData.Target}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.5 }}
+              className="font-medium text-foreground"
+            >
+              {formatRupiah(currentData.Target)}
+            </motion.span>
+          </AnimatePresence>
         </div>
       </CardFooter>
     </Card>

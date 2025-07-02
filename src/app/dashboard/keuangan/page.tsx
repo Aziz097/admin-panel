@@ -1,38 +1,44 @@
+"use client"
+
 import { AppSidebar } from "@/components/app-sidebar"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { DataTable } from "@/components/data-table"
-import { ChartRadialStacked } from "@/components/chart-radial"
+import { ChartRadialATTB } from "@/components/chart-radial-attb"
+import { ChartRadialAO } from "@/components/chart-radial-ao"
 import { SectionCards } from "@/components/section-cards"
 import { SiteHeader } from "@/components/site-header"
+import { ChartBarStacked } from "@/components/chart-bar-aki"
+import { ChartAreaGradient } from "@/components/chart-area-optimasi"
 import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar"
-
+import { useState } from "react"
 
 export default function Page() {
+  const [tahun, setTahun] = useState("2024")
+
   return (
     <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
+      style={{
+        "--sidebar-width": "calc(var(--spacing) * 72)",
+        "--header-height": "calc(var(--spacing) * 12)",
+      } as React.CSSProperties}
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
-        <SiteHeader />
+        <SiteHeader tahun={tahun} setTahun={setTahun} />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCards />
               <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
+                <ChartAreaGradient tahun={tahun} />
+              </div>
+              <div className="px-4 lg:px-6">
+                <ChartBarStacked tahun={tahun} />
               </div>
               <div className="px-4 lg:px-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <ChartRadialStacked />
-                <ChartRadialStacked />
+                <ChartRadialAO tahun={tahun} />
+                <ChartRadialATTB tahun={tahun} />
               </div>
             </div>
           </div>
