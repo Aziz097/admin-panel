@@ -1,5 +1,6 @@
 "use client"
 
+import { useSession } from "next-auth/react"
 import { useTransition } from "react"
 import { useRouter } from "next/navigation"
 import {
@@ -30,15 +31,9 @@ import {
 
 import { signOutAction } from "@/lib/actions"
 
-export function NavUser({
-  user,
-}: {
-  user?: {
-    name?: string
-    email?: string
-    avatar?: string
-  } | null
-}) {
+export function NavUser() {
+  const { data: session, status } = useSession() // 👈 v5 beta still uses this
+  const user = session?.user
   const { isMobile } = useSidebar()
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -61,13 +56,13 @@ export function NavUser({
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        {!user ? (
+        {status === "loading" ? null : !user ? (
           <SidebarMenuButton
             onClick={handleLogin}
             size="lg"
             className="justify-center bg-zinc-900 text-white hover:bg-zinc-700 hover:text-white transition-colors duration-200"
           >
-            <IconLogin/>
+            <IconLogin />
             <span>Login</span>
           </SidebarMenuButton>
         ) : (
@@ -77,10 +72,6 @@ export function NavUser({
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                <Avatar className="h-8 w-8 rounded-lg grayscale">
-                  <AvatarImage src={user.avatar || ""} alt={user.name || ""} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
                   <span className="text-muted-foreground truncate text-xs">
@@ -98,10 +89,6 @@ export function NavUser({
             >
               <DropdownMenuLabel className="p-0 font-normal">
                 <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                  <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={user.avatar || ""} alt={user.name || ""} />
-                    <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                  </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">{user.name}</span>
                     <span className="text-muted-foreground truncate text-xs">

@@ -34,7 +34,7 @@ export function LoginForm({
       return
     }
 
-    router.replace("/dashboard")
+    window.location.href = "/dashboard"
   }
 
   return (
