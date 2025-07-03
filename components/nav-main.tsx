@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sidebar"
 import { cn } from "@/lib/utils"
 import { Icon } from "@tabler/icons-react"
+import { useRouter } from 'next/navigation';
 
 type NavItem = {
   title: string
@@ -30,6 +31,8 @@ type NavItem = {
 }
 
 export function NavMain({ items }: { items: NavItem[] }) {
+  const router = useRouter()
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -55,12 +58,12 @@ export function NavMain({ items }: { items: NavItem[] }) {
                       {item.items.map((subItem) => (
                         <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuSubButton asChild>
-                            <a
-                              href={subItem.url}
-                              className="pl-4 py-1.5 text-sm rounded-md transition-colors hover:bg-muted"
+                            <button
+                              onClick={() => router.push(subItem.url)}
+                              className="pl-4 py-1.5 text-sm w-full text-left rounded-md transition-colors hover:bg-muted"
                             >
                               {subItem.title}
-                            </a>
+                            </button>
                           </SidebarMenuSubButton>
                         </SidebarMenuSubItem>
                       ))}
@@ -75,10 +78,13 @@ export function NavMain({ items }: { items: NavItem[] }) {
                   tooltip={item.title}
                   className="flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors hover:bg-muted"
                 >
-                  <a href={item.url ?? "#"} className="flex items-center gap-2 w-full">
+                  <button
+                    onClick={() => item.url && router.push(item.url)}
+                    className="flex items-center gap-2 w-full text-left"
+                  >
                     {item.icon && <item.icon className="w-4 h-4" />}
                     <span className="truncate">{item.title}</span>
-                  </a>
+                  </button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )
