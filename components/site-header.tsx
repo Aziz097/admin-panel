@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/select"
 
 interface SiteHeaderProps {
-  tahun: string
-  setTahun: (val: string) => void
+  tahun?: string
+  setTahun?: (val: string) => void
 }
 
-const tahunList = ["2023", "2024"] 
+const tahunList = ["2023", "2024"]
 
 export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
   return (
@@ -28,19 +28,20 @@ export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
         <h1 className="text-base font-medium">Documents</h1>
 
         <div className="ml-auto flex items-center gap-2">
-          {/* Select Tahun Global */}
-          <Select value={tahun} onValueChange={(val) => setTahun(val)}>
-            <SelectTrigger className="w-[100px]">
-              <SelectValue placeholder="Tahun" />
-            </SelectTrigger>
-            <SelectContent>
-              {tahunList.map((year) => (
-                <SelectItem key={year} value={year}>
-                  {year}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {tahun && setTahun && (
+            <Select value={tahun} onValueChange={(val) => setTahun(val)}>
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="Tahun" />
+              </SelectTrigger>
+              <SelectContent>
+                {tahunList.map((year) => (
+                  <SelectItem key={year} value={year}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
 
           <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
             <a

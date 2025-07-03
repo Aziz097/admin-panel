@@ -18,6 +18,7 @@ export default function Page() {
     >
       <AppSidebar variant="inset" />
       <SidebarInset>
+        <SiteHeader />
       </SidebarInset>
     </SidebarProvider>
   )
