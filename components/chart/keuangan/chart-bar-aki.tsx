@@ -25,17 +25,17 @@ type BulanData = {
 
 const allChartData: Record<string, BulanData[]> = {
   "2024": [
-    { month: "January", Target: 1043122500, Realisasi: 1043122500 },
+    { month: "January", Target: 1043122500, Realisasi: 903122500 },
     { month: "February", Target: 0, Realisasi: 0 },
     { month: "March", Target: 0, Realisasi: 0 },
     { month: "April", Target: 0, Realisasi: 0 },
-    { month: "May", Target: 2433952500, Realisasi: 2433952500 },
-    { month: "June", Target: 4160280000, Realisasi: 4160280000 },
+    { month: "May", Target: 2433952500, Realisasi: 1333952500 },
+    { month: "June", Target: 4160280000, Realisasi: 3150280000 },
     { month: "July", Target: 0, Realisasi: 0 },
-    { month: "August", Target: 2843820000, Realisasi: 2843820000 },
+    { month: "August", Target: 2843820000, Realisasi: 1743820000 },
     { month: "September", Target: 0, Realisasi: 0 },
-    { month: "October", Target: 3396600000, Realisasi: 3396600000 },
-    { month: "November", Target: 572260477, Realisasi: 572260477 },
+    { month: "October", Target: 3396600000, Realisasi: 2296600000 },
+    { month: "November", Target: 572260477, Realisasi: 482260477 },
     { month: "December", Target: 0, Realisasi: 0 },
   ],
   "2023": [

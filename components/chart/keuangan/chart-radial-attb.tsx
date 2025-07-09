@@ -38,8 +38,8 @@ type RawData = Record<string, YearData>
 const rawData: RawData = {
   "2024": {
     "Semester 1": {
-      Target: 7366358457,
-      Realisasi: 7375835136,
+      Target: 3570000,
+      Realisasi: 2760000,
     },
     "Semester 2": {
       Target: 6964180930,
