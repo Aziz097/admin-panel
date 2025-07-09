@@ -30,40 +30,19 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-type Semester = "Semester 1" | "Semester 2"
-type SemesterData = { Target: number; Realisasi: number }
-type YearData = Record<Semester, SemesterData>
-type RawData = Record<string, YearData>
+type Semester = "Semester 1" | "Semester 2" | "Akumulasi"
 
-const rawData: RawData = {
-  "2024": {
-    "Semester 1": {
-      Target:  15874463266,
-      Realisasi:  15874463266,
-    },
-    "Semester 2": {
-      Target:  15874463266,
-      Realisasi:  15297981705,
-    },
-  },
-  "2023": {
-    "Semester 1": {
-      Target:  15874463266,
-      Realisasi:  15874463266,
-    },
-    "Semester 2": {
-      Target:  15874463266,
-      Realisasi:  15297981705,
-    },
-  },
-}
+type SemesterData = { Target: number; Realisasi: number }
+type YearData = Record<Exclude<Semester, "Akumulasi">, SemesterData>
+type RawData = Record<string, YearData>
 
 const chartConfig = {
   Target: { label: "Target" },
   Realisasi: { label: "Realisasi" },
 } satisfies ChartConfig
 
-function formatRupiah(value: number) {
+function formatRupiah(value: number | null | undefined) {
+  if (typeof value !== "number") return "-"
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
@@ -72,14 +51,58 @@ function formatRupiah(value: number) {
 }
 
 export function ChartRadialAO({ tahun }: { tahun: string }) {
-  const [semester, setSemester] = React.useState<Semester | "Akumulasi">("Semester 1")
+  const [semester, setSemester] = React.useState<Semester>("Semester 1")
+  const [rawData, setRawData] = React.useState<RawData>({})
+
+  // Fetch AO data on mount
+  React.useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch("/api/keuangan?type=ao")
+        const json = await res.json()
+
+        // Transform API response into { tahun: { "Semester 1": {}, "Semester 2": {} } }
+        const transformed: RawData = {}
+
+        for (const entry of json) {
+          const semKey: "Semester 1" | "Semester 2" =
+            entry.semester === "1" ? "Semester 1" : "Semester 2"
+
+          if (!transformed[entry.tahun]) {
+            transformed[entry.tahun] = {
+              "Semester 1": { Target: 0, Realisasi: 0 },
+              "Semester 2": { Target: 0, Realisasi: 0 },
+            }
+          }
+
+          transformed[entry.tahun][semKey] = {
+            Target: Number(entry.target),
+            Realisasi: Number(entry.realisasi ?? 0),
+          }
+        }
+
+        setRawData(transformed)
+      } catch (error) {
+        console.error("Failed to fetch AO data:", error)
+      }
+    }
+
+    fetchData()
+  }, [])
 
   const currentYearData = rawData[tahun]
+
+  if (!currentYearData) return null
+
   const currentData =
     semester === "Akumulasi"
       ? {
-          Target: currentYearData["Semester 1"].Target + currentYearData["Semester 2"].Target,
-          Realisasi: currentYearData["Semester 1"].Realisasi + currentYearData["Semester 2"].Realisasi,
+          Target:
+            currentYearData["Semester 1"].Target +
+            currentYearData["Semester 2"].Target,
+          Realisasi:
+            currentYearData["Semester 1"].Realisasi +
+            currentYearData["Semester 2"].Realisasi,
         }
       : currentYearData[semester]
 
@@ -91,7 +114,11 @@ export function ChartRadialAO({ tahun }: { tahun: string }) {
     },
   ]
 
-  const percentage = (currentData.Realisasi / currentData.Target) * 100
+  const percentage =
+    currentData.Target > 0
+      ? (currentData.Realisasi / currentData.Target) * 100
+      : 0
+
   const formattedPercentage = percentage.toFixed(2) + "%"
 
   return (
@@ -99,10 +126,12 @@ export function ChartRadialAO({ tahun }: { tahun: string }) {
       <CardHeader className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 pb-0">
         <div>
           <CardTitle>Penyerapan AO</CardTitle>
-          <CardDescription>{semester} - {tahun}</CardDescription>
+          <CardDescription>
+            {semester} - {tahun}
+          </CardDescription>
         </div>
 
-        <Select value={semester} onValueChange={(val) => setSemester(val as typeof semester)}>
+        <Select value={semester} onValueChange={(val) => setSemester(val as Semester)}>
           <SelectTrigger className="w-full sm:w-36">
             <SelectValue placeholder="Semester" />
           </SelectTrigger>

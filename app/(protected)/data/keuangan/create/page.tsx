@@ -124,8 +124,8 @@ export default function CreateKeuanganPage() {
               <SelectContent>
                 <SelectItem value="optimasi">Optimasi 5.4</SelectItem>
                 <SelectItem value="aki">Disburse AKI</SelectItem>
-                <SelectItem value="ao">Penarikan AO</SelectItem>
-                <SelectItem value="attb">Penyerapan ATTB</SelectItem>
+                <SelectItem value="ao">Penyerapan AO</SelectItem>
+                <SelectItem value="attb">Penarikan ATTB</SelectItem>
               </SelectContent>
             </Select>
           </div>

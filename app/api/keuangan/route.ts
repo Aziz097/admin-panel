@@ -13,8 +13,8 @@ type KeuanganItem = attb | ao | aki | optimasi;
 const attbSchema = z.object({
   tahun: z.string(),
   semester: z.string(),
-  target: z.number().int(),
-  realisasi: z.number().int().optional(),
+  target: z.number(),
+  realisasi: z.number().optional(),
 });
 
 const aoSchema = attbSchema;
@@ -22,17 +22,17 @@ const aoSchema = attbSchema;
 const akiSchema = z.object({
   tahun: z.string(),
   bulan: z.string(),
-  target: z.number().int(),
-  realisasi: z.number().int().optional(),
+  target: z.number(),
+  realisasi: z.number().optional(),
 });
 
 const optimasiSchema = z.object({
   tahun: z.string(),
   bulan: z.string(),
   kategori: z.string(),
-  penetapan: z.number().int(),
-  optimasi: z.number().int().optional(),
-  realisasi: z.number().int().optional(),
+  penetapan: z.number(),
+  optimasi: z.number().optional(),
+  realisasi: z.number().optional(),
 });
 
 // Maps
@@ -50,47 +50,58 @@ const schemaMap: Record<KeuanganType, any> = {
   optimasi: optimasiSchema,
 };
 
+// Helper to normalize BigInt before JSON response
+function normalizeBigInt(obj: any): any {
+  return Object.fromEntries(
+    Object.entries(obj).map(([key, value]) => [
+      key,
+      typeof value === "bigint" ? Number(value) : value,
+    ])
+  );
+}
+
 // GET
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const type = searchParams.get("type") as KeuanganType
-  const tahun = searchParams.get("tahun") || undefined
-  const id = searchParams.get("id")
+  const { searchParams } = new URL(req.url);
+  const type = searchParams.get("type") as KeuanganType;
+  const tahun = searchParams.get("tahun") || undefined;
+  const id = searchParams.get("id");
 
   if (!type || !(type in modelMap)) {
-    return NextResponse.json({ error: "Invalid or missing type" }, { status: 400 })
+    return NextResponse.json({ error: "Invalid or missing type" }, { status: 400 });
   }
 
-  const model = modelMap[type]
+  const model = modelMap[type];
 
   try {
     if (id) {
-      const numericId = Number(id)
+      const numericId = Number(id);
       if (isNaN(numericId)) {
-        return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+        return NextResponse.json({ error: "Invalid id" }, { status: 400 });
       }
 
-      const data = await model.findUnique({ where: { id: numericId } })
+      const data = await model.findUnique({ where: { id: numericId } });
       if (!data) {
-        return NextResponse.json({ error: `${type} entry not found` }, { status: 404 })
+        return NextResponse.json({ error: `${type} entry not found` }, { status: 404 });
       }
 
-      return NextResponse.json({ ...data, type })
+      return NextResponse.json({ ...normalizeBigInt(data), type });
     }
 
     const data: KeuanganItem[] = await model.findMany({
       where: tahun ? { tahun } : undefined,
-    })
+    });
 
-    return NextResponse.json(data.map((item) => ({ ...item, type })))
+    return NextResponse.json(
+      data.map((item) => ({ ...normalizeBigInt(item), type }))
+    );
   } catch (error) {
-    console.error(`Error fetching ${type} data:`, error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error(`Error fetching ${type} data:`, error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-
-// POST (single or batch)
+// POST
 export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type") as KeuanganType;
@@ -145,7 +156,6 @@ export async function POST(req: NextRequest) {
     const validated = schema.parse(body);
     const created = await model.create({ data: validated });
     return NextResponse.json(created, { status: 201 });
-
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Validation failed", details: error.errors }, { status: 400 });
@@ -155,7 +165,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// PUT (update by id)
+// PUT
 export async function PUT(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type") as KeuanganType;
@@ -176,7 +186,7 @@ export async function PUT(req: NextRequest) {
       data: validated,
     });
 
-    return NextResponse.json(updated);
+    return NextResponse.json(normalizeBigInt(updated));
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: "Validation failed", details: error.errors }, { status: 400 });
@@ -186,7 +196,7 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE (by id)
+// DELETE
 export async function DELETE(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const type = searchParams.get("type") as KeuanganType;

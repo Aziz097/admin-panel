@@ -221,10 +221,16 @@ export function DataTable() {
 
   const [isLoading, setIsLoading] = React.useState(true)
   const [data, setData] = React.useState<any[]>([])
-  const [sorting, setSorting] = React.useState<SortingState>([
-    { id: "bulan", desc: false },
-    { id: "tahun", desc: false }
-  ])
+  const sorting = React.useMemo<SortingState>(() => {
+    if (type === "ao" || type === "attb") {
+      return [{ id: "tahun", desc: false }]
+    }
+    return [
+      { id: "bulan", desc: false },
+      { id: "tahun", desc: false }
+    ]
+  }, [type])
+
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 })
@@ -322,18 +328,25 @@ export function DataTable() {
   const table = useReactTable({
     data: filteredData,
     columns: columnsMap[type],
-    state: { sorting, columnFilters, columnVisibility, pagination },
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      pagination,
+    },
     getRowId: (row) => row.id?.toString() ?? `${Math.random()}`,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
+    // ✅ Remove this line:
+    // onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     enableRowSelection: true,
   })
+
 
   if (isLoading) {
     const currentColumns = columnsMap[type] || []
@@ -413,8 +426,8 @@ export function DataTable() {
             <SelectContent>
               <SelectItem value="optimasi">Optimasi 5.4</SelectItem>
               <SelectItem value="aki">Disburse AKI</SelectItem>
-              <SelectItem value="ao">Penarikan AO</SelectItem>
-              <SelectItem value="attb">Penyerapan ATTB</SelectItem>
+              <SelectItem value="ao">Penyerapan AO</SelectItem>
+              <SelectItem value="attb">Penarikan ATTB</SelectItem>
             </SelectContent>
           </Select>
           <Select value={selectedYear} onValueChange={setSelectedYear}>
