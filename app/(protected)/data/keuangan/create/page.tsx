@@ -29,7 +29,7 @@ const KATEGORI_OPTIONS = [
 ]
 
 const EMPTY_ROW = {
-  tahun: "",
+  tahun: new Date().getFullYear().toString(),
   bulan: "",
   semester: "",
   kategori: "",
@@ -118,7 +118,7 @@ export default function CreateKeuanganPage() {
                 setRows([EMPTY_ROW])
               }}
             >
-              <SelectTrigger className="w-full sm:w-[200px]">
+              <SelectTrigger className="w-full lg:w-[200px]">
                 <SelectValue placeholder="Pilih Tipe" />
               </SelectTrigger>
               <SelectContent>

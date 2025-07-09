@@ -11,6 +11,7 @@ import {
   ColumnFiltersState,
   VisibilityState,
 } from "@tanstack/react-table"
+import { Skeleton } from "./ui/skeleton"
 import {
   Dialog,
   DialogTrigger,
@@ -63,6 +64,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter, useSearchParams } from "next/navigation"
+import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 export type KeuanganType = "optimasi" | "aki" | "ao" | "attb"
@@ -159,6 +161,15 @@ const actionColumn: ColumnDef<any> = {
           <DropdownMenuContent align="end" className="w-32">
             <DropdownMenuItem
               className="cursor-pointer"
+              onSelect={(e) => {
+                e.preventDefault()
+                const { id, type } = row.original
+                if (!id || !type) {
+                  toast.error("ID atau type tidak ditemukan.")
+                  return
+                }
+                router.push(`/data/keuangan/edit/${id}?type=${type}`)
+              }}
             >
               Edit
             </DropdownMenuItem>
@@ -208,8 +219,12 @@ export function DataTable() {
     ALLOWED_TYPES.includes(typeFromURL) ? typeFromURL : "optimasi"
   )
 
+  const [isLoading, setIsLoading] = React.useState(true)
   const [data, setData] = React.useState<any[]>([])
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: "bulan", desc: false },
+    { id: "tahun", desc: false }
+  ])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 })
@@ -218,7 +233,27 @@ export function DataTable() {
 
   const baseColumns: ColumnDef<any>[] = [
     { accessorKey: "tahun", header: "Tahun" },
-    { accessorKey: "bulan", header: "Bulan" },
+    {
+    accessorKey: "bulan",
+    header: "Bulan",
+    sortingFn: (rowA, rowB, columnId) => {
+      const order = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+
+      const bulanA = rowA.getValue(columnId) as string;
+      const bulanB = rowB.getValue(columnId) as string;
+      const tahunA = Number(rowA.original.tahun);
+      const tahunB = Number(rowB.original.tahun);
+
+      if (tahunA !== tahunB) {
+        return tahunB - tahunA;
+      }
+
+      return order.indexOf(bulanA) - order.indexOf(bulanB);
+      }
+    },
     { accessorKey: "semester", header: "Semester" },
     {
       accessorKey: "kategori",
@@ -257,16 +292,20 @@ export function DataTable() {
 
   React.useEffect(() => {
     async function fetchData() {
+      setIsLoading(true)
       try {
         const res = await fetch(`/api/keuangan?type=${type}`)
         const json = await res.json()
         setData(json)
       } catch {
         toast.error("Gagal memuat data.")
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchData()
   }, [type])
+
 
   const years = React.useMemo(() => {
     const allYears = data.map((item) => item.tahun).filter(Boolean)
@@ -295,6 +334,65 @@ export function DataTable() {
     onPaginationChange: setPagination,
     enableRowSelection: true,
   })
+
+  if (isLoading) {
+    const currentColumns = columnsMap[type] || []
+
+    return (
+      <div className="w-full flex flex-col gap-4 overflow-auto px-4 lg:px-6 py-6">
+        {/* Optional: mimic the filter bar if you want */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex gap-2 flex-wrap">
+            <Skeleton className="h-9 w-[160px]" />
+            <Skeleton className="h-9 w-[135px]" />
+            {type === "optimasi" && (
+              <Skeleton className="h-9 w-[230px]" />
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-[140px]" />
+            <Skeleton className="h-9 w-[120px]" />
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader className="bg-muted">
+              <TableRow>
+                {currentColumns.map((_, i) => (
+                  <TableHead key={i}>
+                    <Skeleton className="h-4 w-[90px]" />
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[...Array(6)].map((_, rowIndex) => (
+                <TableRow key={rowIndex} className="h-12">
+                  {currentColumns.map((_, colIndex) => (
+                    <TableCell key={colIndex}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Optional: pagination mimic */}
+        <div className="flex justify-between items-center px-4">
+          <Skeleton className="h-5 w-40 hidden lg:block" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md hidden lg:block" />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <Tabs

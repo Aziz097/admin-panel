@@ -52,23 +52,43 @@ const schemaMap: Record<KeuanganType, any> = {
 
 // GET
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const type = searchParams.get("type") as KeuanganType;
-  const tahun = searchParams.get("tahun") || undefined;
+  const { searchParams } = new URL(req.url)
+  const type = searchParams.get("type") as KeuanganType
+  const tahun = searchParams.get("tahun") || undefined
+  const id = searchParams.get("id")
 
   if (!type || !(type in modelMap)) {
-    return NextResponse.json({ error: "Invalid or missing type" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid or missing type" }, { status: 400 })
   }
 
+  const model = modelMap[type]
+
   try {
-    const model = modelMap[type];
-    const data: KeuanganItem[] = await model.findMany({ where: tahun ? { tahun } : {} });
-    return NextResponse.json(data.map((item) => ({ ...item, type })));
+    if (id) {
+      const numericId = Number(id)
+      if (isNaN(numericId)) {
+        return NextResponse.json({ error: "Invalid id" }, { status: 400 })
+      }
+
+      const data = await model.findUnique({ where: { id: numericId } })
+      if (!data) {
+        return NextResponse.json({ error: `${type} entry not found` }, { status: 404 })
+      }
+
+      return NextResponse.json({ ...data, type })
+    }
+
+    const data: KeuanganItem[] = await model.findMany({
+      where: tahun ? { tahun } : undefined,
+    })
+
+    return NextResponse.json(data.map((item) => ({ ...item, type })))
   } catch (error) {
-    console.error(`Error fetching ${type} data:`, error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    console.error(`Error fetching ${type} data:`, error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
+
 
 // POST (single or batch)
 export async function POST(req: NextRequest) {
