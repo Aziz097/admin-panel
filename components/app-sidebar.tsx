@@ -38,8 +38,17 @@ const data = {
     },
     {
       title: "Data",
-      url: "/data",
       icon: IconDatabase,
+            items: [
+        {
+          title: "Administrasi",
+          url: "/data/administrasi",
+        },
+        {
+          title: "Keuangan",
+          url: "/data/keuangan",
+        },
+      ],
     },
   ],
 }

@@ -11,6 +11,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -45,4 +46,46 @@ model Account {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+}
+
+model attb {
+  id        Int       @id @default(autoincrement())
+  tahun     String
+  semester  String
+  target    Int
+  realisasi Int?
+
+  @@unique([tahun, semester])
+}
+
+model ao {
+  id        Int       @id @default(autoincrement())
+  tahun     String
+  semester  String
+  target    Int
+  realisasi Int?
+
+  @@unique([tahun, semester])
+}
+
+model aki {
+  id        Int       @id @default(autoincrement())
+  tahun     String
+  bulan     String
+  target    Int
+  realisasi Int?
+  
+  @@unique([tahun, bulan])
+}
+
+model optimasi {
+  id         Int      @id @default(autoincrement())
+  tahun      String
+  bulan      String
+  kategori   String
+  penetapan  Int
+  optimasi   Int?
+  realisasi  Int?
+
+  @@unique([tahun, bulan])
 }
