@@ -27,24 +27,24 @@ export function TableKepatuhan({ data }: { data: IndikatorItem[] }) {
           <tbody>
             {data.length === 0 ? (
               <tr>
-                <td colSpan={4} className="text-center py-3 text-zinc-400">Belum ada data</td>
+                <td colSpan={5} className="text-center py-3 text-zinc-400">Belum ada data</td>
               </tr>
             ) : (
               data.map((item, idx) => {
-                let status = "Selesai"
-                let color = "green-500"
-                let Icon = CheckCircle
+                let status = "Selesai";
+                let color = "green-500";
+                let Icon = CheckCircle;
                 if (item.patuh === 0) {
-                  status = "Belum"
-                  color = "zinc-400"
-                  Icon = AlertTriangle
+                  status = "Belum";
+                  color = "zinc-400";
+                  Icon = AlertTriangle;
                 } else if (item.patuh < item.eviden) {
-                  status = "Proses"
-                  color = "yellow-500"
-                  Icon = Loader2
+                  status = "Proses";
+                  color = "yellow-500";
+                  Icon = Loader2;
                 }
                 return (
-                  <tr key={item.indikator} className="border-b last:border-none">
+                  <tr key={`${item.indikator}-${idx}`} className="border-b last:border-none">
                     <td className="p-2">{item.indikator}</td>
                     <td className="p-2">{item.kategori || "-"}</td>
                     <td className="p-2">{item.patuh} / {item.eviden}</td>
@@ -58,7 +58,7 @@ export function TableKepatuhan({ data }: { data: IndikatorItem[] }) {
                       </Badge>
                     </td>
                   </tr>
-                )
+                );
               })
             )}
           </tbody>
