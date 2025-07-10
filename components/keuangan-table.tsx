@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import {
   ColumnDef,
@@ -11,7 +13,7 @@ import {
   ColumnFiltersState,
   VisibilityState,
 } from "@tanstack/react-table"
-import { Skeleton } from "./ui/skeleton"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogTrigger,
@@ -153,7 +155,7 @@ const actionColumn: ColumnDef<any> = {
       <div className="w-full h-full flex items-center justify-end pr-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="cursor-pointer">
               <IconDotsVertical />
               <span className="sr-only">Open menu</span>
             </Button>
@@ -196,8 +198,8 @@ const actionColumn: ColumnDef<any> = {
                     : "Hapus baris ini? Tindakan ini tidak bisa dibatalkan."}
                 </p>
                 <DialogFooter className="mt-4">
-                  <Button variant="outline" onClick={() => setOpen(false)}>Batal</Button>
-                  <Button variant="destructive" onClick={handleDelete}>Hapus</Button>
+                  <Button className="cursor-pointer" variant="outline" onClick={() => setOpen(false)}>Batal</Button>
+                  <Button className="cursor-pointer" variant="destructive" onClick={handleDelete}>Hapus</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -417,27 +419,27 @@ export function DataTable() {
       }}
       className="w-full flex-col gap-6 py-4 lg:py-6"
     >
-<div className="flex flex-wrap items-center justify-between gap-4 px-4 lg:px-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 px-4 lg:px-6">
         <div className="flex gap-2 flex-wrap">
           <Select value={type} onValueChange={(val) => setType(val as KeuanganType)}>
-            <SelectTrigger className="w-[160px]" size="sm">
+            <SelectTrigger className="w-[160px] cursor-pointer" size="sm">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="optimasi">Optimasi 5.4</SelectItem>
-              <SelectItem value="aki">Disburse AKI</SelectItem>
-              <SelectItem value="ao">Penyerapan AO</SelectItem>
-              <SelectItem value="attb">Penarikan ATTB</SelectItem>
+            <SelectContent >
+              <SelectItem className="cursor-pointer" value="optimasi">Optimasi 5.4</SelectItem>
+              <SelectItem className="cursor-pointer" value="aki">Disburse AKI</SelectItem>
+              <SelectItem className="cursor-pointer" value="ao">Penyerapan AO</SelectItem>
+              <SelectItem className="cursor-pointer" value="attb">Penarikan ATTB</SelectItem>
             </SelectContent>
           </Select>
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-[135px]" size="sm">
+            <SelectTrigger className="w-[135px] cursor-pointer" size="sm">
               <SelectValue placeholder="Pilih Tahun" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Semua Tahun</SelectItem>
+              <SelectItem className="cursor-pointer" value="all">Semua Tahun</SelectItem>
               {years.map((year) => (
-                <SelectItem key={year} value={year.toString()}>
+                <SelectItem className="cursor-pointer" key={year} value={year.toString()}>
                   {year}
                 </SelectItem>
               ))}
@@ -445,13 +447,13 @@ export function DataTable() {
           </Select>
           {type === "optimasi" && (
             <Select value={selectedKategori} onValueChange={setSelectedKategori}>
-              <SelectTrigger className="w-[230px]" size="sm">
+              <SelectTrigger className="w-[230px] cursor-pointer" size="sm">
                 <SelectValue placeholder="Pilih Kategori" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Kategori</SelectItem>
+                <SelectItem value="all" className="cursor-pointer">Semua Kategori</SelectItem>
                 {KATEGORI_OPTIONS.map((k) => (
-                  <SelectItem key={k} value={k}>
+                  <SelectItem className="cursor-pointer" key={k} value={k}>
                     {k}
                   </SelectItem>
                 ))}
@@ -462,7 +464,7 @@ export function DataTable() {
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="cursor-pointer">
                 <IconLayoutColumns />
                 <span className="hidden lg:inline">Filter Columns</span>
                 <IconChevronDown />
@@ -484,6 +486,7 @@ export function DataTable() {
             </DropdownMenuContent>
           </DropdownMenu>
           <Button
+            className="cursor-pointer"
             variant="outline"
             size="sm"
             onClick={() => router.push(`/data/keuangan/create?type=${type}`)}

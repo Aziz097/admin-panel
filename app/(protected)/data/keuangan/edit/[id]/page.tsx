@@ -83,10 +83,22 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
     try {
       const payload = {
         ...form,
-        penetapan: form.penetapan ? parseRupiah(form.penetapan) : undefined,
-        optimasi: form.optimasi ? parseRupiah(form.optimasi) : undefined,
-        target: form.target ? parseRupiah(form.target) : undefined,
-        realisasi: form.realisasi ? parseRupiah(form.realisasi) : undefined,
+        penetapan:
+          form.penetapan !== null && form.penetapan !== undefined
+            ? parseRupiah(form.penetapan)
+            : undefined,
+        optimasi:
+          form.optimasi !== null && form.optimasi !== undefined
+            ? parseRupiah(form.optimasi)
+            : undefined,
+        target:
+          form.target !== null && form.target !== undefined
+            ? parseRupiah(form.target)
+            : undefined,
+        realisasi:
+          form.realisasi !== null && form.realisasi !== undefined
+            ? parseRupiah(form.realisasi)
+            : undefined,
       }
 
       const res = await fetch(`/api/keuangan?type=${type}&id=${id}`, {
@@ -115,21 +127,21 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
         <AppSidebar variant="inset" />
         <SidebarInset>
           <SiteHeader />
-            <div className="max-w-[90rem] md:mx-auto px-4 py-6 md:px-6">
-              <div className="flex flex-col items-start justify-between gap-4 w-full sm:flex-row sm:items-center mb-6">
-                <h1 className="text-2xl font-semibold">Edit Data Keuangan</h1>
-                <div className="hidden sm:block sm:w-[243px] invisible">
-                  <Select>
-                    <SelectTrigger className="w-full" />
-                  </Select>
-                </div>
+          <div className="max-w-[90rem] md:mx-auto px-4 py-6 md:px-6">
+            <div className="flex flex-col items-start justify-between gap-4 w-full sm:flex-row sm:items-center mb-6">
+              <h1 className="text-2xl font-semibold">Edit Data Keuangan</h1>
+              <div className="hidden sm:block sm:w-[243px] invisible">
+                <Select>
+                  <SelectTrigger className="w-full cursor-pointer" />
+                </Select>
               </div>
-
-              <Card className="w-full p-6 shadow-sm border rounded-lg flex items-center justify-center min-h-[300px]">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                <span className="text-muted-foreground">Memuat data...</span>
-              </Card>
             </div>
+
+            <Card className="w-full p-6 shadow-sm border rounded-lg flex items-center justify-center min-h-[300px]">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <span className="text-muted-foreground">Memuat data...</span>
+            </Card>
+          </div>
         </SidebarInset>
       </SidebarProvider>
     )
@@ -148,11 +160,11 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
         <div className="max-w-[90rem] md:mx-auto px-4 py-6 space-y-6 md:px-6">
           <div className="flex flex-col items-start justify-between gap-4 w-full sm:flex-row sm:items-center">
             <h1 className="text-2xl font-semibold">Edit Data Keuangan</h1>
-              <div className="hidden sm:block sm:w-[243px] invisible">
-                <Select>
-                  <SelectTrigger className="w-full" />
-                </Select>
-              </div>
+            <div className="hidden sm:block sm:w-[243px] invisible">
+              <Select>
+                <SelectTrigger className="w-full cursor-pointer" />
+              </Select>
+            </div>
           </div>
 
           <Card className="w-full p-4 shadow-sm border rounded-lg sm:p-6">
@@ -163,6 +175,7 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
                   type="text"
                   value={form.tahun}
                   onChange={(e) => handleChange("tahun", e.target.value)}
+                  className="cursor-text"
                 />
               </div>
 
@@ -173,7 +186,7 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
                     value={form.bulan}
                     onValueChange={(val) => handleChange("bulan", val)}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full cursor-pointer">
                       <SelectValue placeholder="Pilih Bulan" />
                     </SelectTrigger>
                     <SelectContent>
@@ -181,7 +194,7 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
                         "Januari", "Februari", "Maret", "April", "Mei", "Juni",
                         "Juli", "Agustus", "September", "Oktober", "November", "Desember",
                       ].map((bulan) => (
-                        <SelectItem key={bulan} value={bulan}>
+                        <SelectItem key={bulan} value={bulan} className="cursor-pointer">
                           {bulan}
                         </SelectItem>
                       ))}
@@ -198,7 +211,7 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
                       value={form.bulan}
                       onValueChange={(val) => handleChange("bulan", val)}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full cursor-pointer">
                         <SelectValue placeholder="Pilih Bulan" />
                       </SelectTrigger>
                       <SelectContent>
@@ -206,7 +219,7 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
                           "Januari", "Februari", "Maret", "April", "Mei", "Juni",
                           "Juli", "Agustus", "September", "Oktober", "November", "Desember",
                         ].map((bulan) => (
-                          <SelectItem key={bulan} value={bulan}>
+                          <SelectItem key={bulan} value={bulan} className="cursor-pointer">
                             {bulan}
                           </SelectItem>
                         ))}
@@ -220,12 +233,12 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
                       value={form.kategori}
                       onValueChange={(val) => handleChange("kategori", val)}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full cursor-pointer">
                         <SelectValue placeholder="Pilih Kategori" />
                       </SelectTrigger>
                       <SelectContent>
                         {KATEGORI_OPTIONS.map((k) => (
-                          <SelectItem key={k} value={k}>
+                          <SelectItem key={k} value={k} className="cursor-pointer">
                             {k}
                           </SelectItem>
                         ))}
@@ -242,12 +255,12 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
                     value={form.semester}
                     onValueChange={(val) => handleChange("semester", val)}
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full cursor-pointer">
                       <SelectValue placeholder="Pilih Semester" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">1</SelectItem>
-                      <SelectItem value="2">2</SelectItem>
+                      <SelectItem value="1" className="cursor-pointer">1</SelectItem>
+                      <SelectItem value="2" className="cursor-pointer">2</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -262,6 +275,7 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
                       inputMode="numeric"
                       value={formatRupiah(form.penetapan)}
                       onChange={(e) => handleChange("penetapan", e.target.value)}
+                      className="cursor-text"
                     />
                   </div>
                   <div className="w-full">
@@ -271,6 +285,7 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
                       inputMode="numeric"
                       value={formatRupiah(form.optimasi)}
                       onChange={(e) => handleChange("optimasi", e.target.value)}
+                      className="cursor-text"
                     />
                   </div>
                 </>
@@ -284,6 +299,7 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
                     inputMode="numeric"
                     value={formatRupiah(form.target)}
                     onChange={(e) => handleChange("target", e.target.value)}
+                    className="cursor-text"
                   />
                 </div>
               )}
@@ -295,6 +311,7 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
                   inputMode="numeric"
                   value={formatRupiah(form.realisasi)}
                   onChange={(e) => handleChange("realisasi", e.target.value)}
+                  className="cursor-text"
                 />
               </div>
             </div>
@@ -303,12 +320,12 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
             <Button
               variant="secondary"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto cursor-pointer"
               onClick={() => router.push(`/data/keuangan?type=${type}`)}
             >
               Kembali
             </Button>
-            <Button className="w-full sm:w-auto" onClick={handleSubmit}>
+            <Button className="w-full sm:w-auto cursor-pointer" onClick={handleSubmit}>
               Simpan
             </Button>
           </div>

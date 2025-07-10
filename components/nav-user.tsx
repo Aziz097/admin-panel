@@ -30,9 +30,10 @@ import {
 } from "@/components/ui/sidebar"
 
 import { signOutAction } from "@/lib/actions"
+import { toast } from "sonner" // Import toast
 
 export function NavUser() {
-  const { data: session, status } = useSession() // 👈 v5 beta still uses this
+  const { data: session, status } = useSession() 
   const user = session?.user
   const { isMobile } = useSidebar()
   const router = useRouter()
@@ -42,9 +43,11 @@ export function NavUser() {
     startTransition(async () => {
       const res = await signOutAction()
       if (res.success) {
+        toast.success("Logged out successfully!")
         router.replace("/login")
       } else {
         console.error(res.error)
+        toast.error("Logout failed. Please try again.") 
       }
     })
   }
@@ -60,7 +63,7 @@ export function NavUser() {
           <SidebarMenuButton
             onClick={handleLogin}
             size="lg"
-            className="justify-center bg-zinc-900 text-white hover:bg-zinc-700 hover:text-white transition-colors duration-200"
+            className="cursor-pointer justify-center bg-zinc-900 text-white hover:bg-zinc-700 hover:text-white transition-colors duration-200"
           >
             <IconLogin />
             <span>Login</span>
@@ -70,7 +73,7 @@ export function NavUser() {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                className="cursor-pointer data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{user.name}</span>
@@ -98,7 +101,7 @@ export function NavUser() {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout} disabled={isPending}>
+              <DropdownMenuItem onClick={handleLogout} disabled={isPending} className="cursor-pointer">
                 <IconLogout />
                 {isPending ? "Logging out..." : "Log out"}
               </DropdownMenuItem>

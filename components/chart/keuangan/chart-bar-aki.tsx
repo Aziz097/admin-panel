@@ -1,7 +1,12 @@
 "use client"
 
-import { useMemo } from "react"
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
+import { useEffect, useMemo, useState } from "react"
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  XAxis,
+} from "recharts"
 import {
   Card,
   CardContent,
@@ -15,43 +20,14 @@ import {
   ChartContainer,
   ChartTooltip,
 } from "@/components/ui/chart"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Loader2 } from "lucide-react"
 
 type BulanData = {
   month: string
   Target: number
   Realisasi: number
   Sisa?: number
-}
-
-const allChartData: Record<string, BulanData[]> = {
-  "2024": [
-    { month: "January", Target: 1043122500, Realisasi: 903122500 },
-    { month: "February", Target: 0, Realisasi: 0 },
-    { month: "March", Target: 0, Realisasi: 0 },
-    { month: "April", Target: 0, Realisasi: 0 },
-    { month: "May", Target: 2433952500, Realisasi: 1333952500 },
-    { month: "June", Target: 4160280000, Realisasi: 3150280000 },
-    { month: "July", Target: 0, Realisasi: 0 },
-    { month: "August", Target: 2843820000, Realisasi: 1743820000 },
-    { month: "September", Target: 0, Realisasi: 0 },
-    { month: "October", Target: 3396600000, Realisasi: 2296600000 },
-    { month: "November", Target: 572260477, Realisasi: 482260477 },
-    { month: "December", Target: 0, Realisasi: 0 },
-  ],
-  "2023": [
-    { month: "January", Target: 1043122500, Realisasi: 1043122500 },
-    { month: "February", Target: 0, Realisasi: 0 },
-    { month: "March", Target: 0, Realisasi: 0 },
-    { month: "April", Target: 0, Realisasi: 0 },
-    { month: "May", Target: 2433952500, Realisasi: 2433952500 },
-    { month: "June", Target: 4160280000, Realisasi: 4160280000 },
-    { month: "July", Target: 0, Realisasi: 0 },
-    { month: "August", Target: 2843820000, Realisasi: 2843820000 },
-    { month: "September", Target: 0, Realisasi: 0 },
-    { month: "October", Target: 3396600000, Realisasi: 3396600000 },
-    { month: "November", Target: 572260477, Realisasi: 572260477 },
-    { month: "December", Target: 0, Realisasi: 0 },
-  ],
 }
 
 const chartConfig: ChartConfig = {
@@ -78,13 +54,97 @@ function formatPersen(value: number) {
 }
 
 export function ChartBarStacked({ tahun }: { tahun: string }) {
+  const [rawData, setRawData] = useState<BulanData[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch(`/api/keuangan?type=aki&tahun=${tahun}`)
+        const json = await res.json()
+
+        const months = [
+          "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+          "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+        ]
+
+        const defaultStructure = months.map((month) => ({
+          month,
+          Target: 0,
+          Realisasi: 0,
+        }))
+
+        const merged = defaultStructure.map((item) => {
+          const found = json.find((d: any) => d.bulan === item.month)
+          return found
+            ? {
+                month: found.bulan,
+                Target: Number(found.target),
+                Realisasi: Number(found.realisasi ?? 0),
+              }
+            : item
+        })
+
+        setRawData(merged)
+      } catch (err) {
+        console.error("Failed to fetch AKI data:", err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [tahun])
+
   const chartData = useMemo(() => {
-    const raw = allChartData[tahun] || []
-    return raw.map((item: BulanData) => ({
+    return rawData.map((item) => ({
       ...item,
       Sisa: Math.max(item.Target - item.Realisasi, 0),
     }))
-  }, [tahun])
+  }, [rawData])
+
+  const isAllZero = chartData.every(
+    (d) => d.Target === 0 && d.Realisasi === 0
+  )
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-4 w-1/4 mt-2" />
+        </CardHeader>
+        <CardContent className="flex justify-center items-center h-[220px] lg:h-[450px]">
+          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </CardContent>
+        <CardFooter className="justify-between px-6 pb-4">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-24" />
+        </CardFooter>
+      </Card>
+    )
+  }
+
+  if (isAllZero) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Disburse AKI</CardTitle>
+          <CardDescription>(Januari – Desember) - {tahun}</CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center items-center h-[220px] lg:h-[450px]">
+          <span className="text-muted-foreground text-sm text-center">
+            Tidak ada data untuk tahun{" "}
+            <span className="font-semibold text-foreground">{tahun}</span>.
+          </span>
+        </CardContent>
+        <CardFooter className="justify-between px-6 pb-4">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-24" />
+        </CardFooter>
+      </Card>
+    )
+  }
 
   return (
     <Card>

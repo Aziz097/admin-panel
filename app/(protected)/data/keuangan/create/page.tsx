@@ -118,14 +118,14 @@ export default function CreateKeuanganPage() {
                 setRows([EMPTY_ROW])
               }}
             >
-              <SelectTrigger className="w-full lg:w-[200px]">
+              <SelectTrigger className="w-full lg:w-[200px] cursor-pointer">
                 <SelectValue placeholder="Pilih Tipe" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="optimasi">Optimasi 5.4</SelectItem>
-                <SelectItem value="aki">Disburse AKI</SelectItem>
-                <SelectItem value="ao">Penyerapan AO</SelectItem>
-                <SelectItem value="attb">Penarikan ATTB</SelectItem>
+                <SelectItem value="optimasi" className="cursor-pointer">Optimasi 5.4</SelectItem>
+                <SelectItem value="aki" className="cursor-pointer">Disburse AKI</SelectItem>
+                <SelectItem value="ao" className="cursor-pointer">Penyerapan AO</SelectItem>
+                <SelectItem value="attb" className="cursor-pointer">Penarikan ATTB</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -140,6 +140,7 @@ export default function CreateKeuanganPage() {
                     value={form.tahun}
                     onChange={(e) => handleChange(index, "tahun", e.target.value)}
                     placeholder="Tahun"
+                    className="cursor-text"
                   />
                 </div>
 
@@ -150,7 +151,7 @@ export default function CreateKeuanganPage() {
                       value={form.bulan}
                       onValueChange={(val) => handleChange(index, "bulan", val)}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full cursor-pointer">
                         <SelectValue placeholder="Pilih Bulan" />
                       </SelectTrigger>
                       <SelectContent>
@@ -158,7 +159,7 @@ export default function CreateKeuanganPage() {
                           "Januari", "Februari", "Maret", "April", "Mei", "Juni",
                           "Juli", "Agustus", "September", "Oktober", "November", "Desember",
                         ].map((bulan) => (
-                          <SelectItem key={bulan} value={bulan}>
+                          <SelectItem key={bulan} value={bulan} className="cursor-pointer">
                             {bulan}
                           </SelectItem>
                         ))}
@@ -175,7 +176,7 @@ export default function CreateKeuanganPage() {
                         value={form.bulan}
                         onValueChange={(val) => handleChange(index, "bulan", val)}
                       >
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full cursor-pointer">
                           <SelectValue placeholder="Pilih Bulan" />
                         </SelectTrigger>
                         <SelectContent>
@@ -183,7 +184,7 @@ export default function CreateKeuanganPage() {
                             "Januari", "Februari", "Maret", "April", "Mei", "Juni",
                             "Juli", "Agustus", "September", "Oktober", "November", "Desember",
                           ].map((bulan) => (
-                            <SelectItem key={bulan} value={bulan}>
+                            <SelectItem key={bulan} value={bulan} className="cursor-pointer">
                               {bulan}
                             </SelectItem>
                           ))}
@@ -197,12 +198,12 @@ export default function CreateKeuanganPage() {
                         value={form.kategori}
                         onValueChange={(val) => handleChange(index, "kategori", val)}
                       >
-                        <SelectTrigger className="w-full">
+                        <SelectTrigger className="w-full cursor-pointer">
                           <SelectValue placeholder="Pilih Kategori" />
                         </SelectTrigger>
                         <SelectContent>
                           {KATEGORI_OPTIONS.map((k) => (
-                            <SelectItem key={k} value={k}>
+                            <SelectItem key={k} value={k} className="cursor-pointer">
                               {k}
                             </SelectItem>
                           ))}
@@ -219,12 +220,12 @@ export default function CreateKeuanganPage() {
                       value={form.semester}
                       onValueChange={(val) => handleChange(index, "semester", val)}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full cursor-pointer">
                         <SelectValue placeholder="Pilih Semester" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">1</SelectItem>
-                        <SelectItem value="2">2</SelectItem>
+                        <SelectItem value="1" className="cursor-pointer">1</SelectItem>
+                        <SelectItem value="2" className="cursor-pointer">2</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -242,6 +243,7 @@ export default function CreateKeuanganPage() {
                           handleChange(index, "penetapan", e.target.value)
                         }
                         placeholder="Masukkan jumlah penetapan"
+                        className="cursor-text"
                       />
                     </div>
                     <div className="w-full">
@@ -254,6 +256,7 @@ export default function CreateKeuanganPage() {
                           handleChange(index, "optimasi", e.target.value)
                         }
                         placeholder="Masukkan jumlah optimasi"
+                        className="cursor-text"
                       />
                     </div>
                   </>
@@ -270,6 +273,7 @@ export default function CreateKeuanganPage() {
                         handleChange(index, "target", e.target.value)
                       }
                       placeholder="Masukkan jumlah target"
+                      className="cursor-text"
                     />
                   </div>
                 )}
@@ -284,6 +288,7 @@ export default function CreateKeuanganPage() {
                       handleChange(index, "realisasi", e.target.value)
                     }
                     placeholder="Masukkan jumlah realisasi"
+                    className="cursor-text"
                   />
                 </div>
 
@@ -293,7 +298,7 @@ export default function CreateKeuanganPage() {
                       variant="destructive"
                       size="sm"
                       onClick={() => removeRow(index)}
-                      className="w-full sm:w-auto"
+                      className="w-full sm:w-auto cursor-pointer"
                     >
                       Hapus
                     </Button>
@@ -306,7 +311,7 @@ export default function CreateKeuanganPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
             <Button
               variant="secondary"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto cursor-pointer"
               onClick={() => router.push(`/data/keuangan?type=${type}`)}
             >
               Kembali
@@ -314,13 +319,13 @@ export default function CreateKeuanganPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
               <Button
                 variant="outline"
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto cursor-pointer"
                 onClick={addRow}
               >
                 + Tambah Baris
               </Button>
               <Button
-                className="w-full sm:w-auto mt-2 sm:mt-0"
+                className="w-full sm:w-auto mt-2 sm:mt-0 cursor-pointer"
                 onClick={handleSubmit}
               >
                 Simpan

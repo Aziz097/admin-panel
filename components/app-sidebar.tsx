@@ -63,10 +63,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
               >
-             <img
+              <img
                 src="/logo-upt-tkr.png"
                 alt="UPT PLN Logo"
-                className="object-contain h-10 w-auto"
+                className="object-contain h-10 w-auto cursor-pointer"
               />
             </SidebarMenuButton>
           </SidebarMenuItem>

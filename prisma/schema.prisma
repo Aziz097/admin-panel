@@ -78,17 +78,18 @@ model optimasi {
   optimasi  BigInt?
   realisasi BigInt?
 
-  @@unique([tahun, bulan])
+  @@unique([tahun, bulan, kategori])
 }
 
 model Kepatuhan {
-  id        Int    @id @default(autoincrement())
-  indikator String
-  kategori  String
-  target    Int
-  realisasi Int
-  tahun     String
-  bulan     String
+  id         Int     @id @default(autoincrement())
+  indikator  String
+  kategori   String
+  target     Int
+  realisasi  Int?
+  tahun      String
+  bulan      String
+  keterangan String?
 }
 
 model Komunikasi {
@@ -97,7 +98,7 @@ model Komunikasi {
   tahun         String
   bulan         String
   target        Int
-  realisasi     Int
+  realisasi     Int?
 }
 
 model Sertifikasi {
@@ -108,4 +109,14 @@ model Sertifikasi {
   keterangan String
   tahun      String
   bulan      String
+}
+
+model tjsl {
+  id      Int     @id @default(autoincrement())
+  nama    String
+  nip     String
+  jabatan String
+  tahun   String
+  bulan   String
+  status  Boolean
 }

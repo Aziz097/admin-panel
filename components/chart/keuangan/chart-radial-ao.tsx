@@ -29,6 +29,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Loader2 } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type Semester = "Semester 1" | "Semester 2" | "Akumulasi"
 
@@ -53,15 +55,19 @@ function formatRupiah(value: number | null | undefined) {
 export function ChartRadialAO({ tahun }: { tahun: string }) {
   const [semester, setSemester] = React.useState<Semester>("Semester 1")
   const [rawData, setRawData] = React.useState<RawData>({})
+  const [loading, setLoading] = React.useState(true)
 
-  // Fetch AO data on mount
   React.useEffect(() => {
     async function fetchData() {
       try {
         const res = await fetch("/api/keuangan?type=ao")
         const json = await res.json()
 
-        // Transform API response into { tahun: { "Semester 1": {}, "Semester 2": {} } }
+        if (!Array.isArray(json)) {
+          console.error("Expected array but got:", json)
+          return
+        }
+
         const transformed: RawData = {}
 
         for (const entry of json) {
@@ -84,15 +90,58 @@ export function ChartRadialAO({ tahun }: { tahun: string }) {
         setRawData(transformed)
       } catch (error) {
         console.error("Failed to fetch AO data:", error)
+      } finally {
+        setLoading(false)
       }
     }
 
     fetchData()
   }, [])
 
+  if (loading) {
+    return (
+      <Card className="w-full">
+        <CardHeader className="space-y-2">
+          <Skeleton className="h-6 w-1/2" />
+          <Skeleton className="h-4 w-1/3" />
+        </CardHeader>
+        <CardContent className="flex justify-center items-center h-[210px]">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </CardContent>
+        <CardFooter className="justify-between px-4 pb-4">
+          <Skeleton className="h-4 w-1/3" />
+          <Skeleton className="h-4 w-1/3" />
+        </CardFooter>
+      </Card>
+    )
+  }
+
   const currentYearData = rawData[tahun]
 
-  if (!currentYearData) return null
+  if (!currentYearData) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <div>
+            <CardTitle>Penyerapan AO</CardTitle>
+            <CardDescription>
+              {semester} - {tahun}
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center h-[220px] lg:h-[300px] gap-2">
+          <span className="text-sm text-muted-foreground text-center">
+            Tidak ada data untuk tahun{" "}
+            <span className="font-semibold text-foreground">{tahun}</span>.
+          </span>
+        </CardContent>
+        <CardFooter className="justify-between px-6 pb-4">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-4 w-24" />
+        </CardFooter>
+      </Card>
+    )
+  }
 
   const currentData =
     semester === "Akumulasi"
