@@ -21,6 +21,7 @@ export function TableKepatuhan({ data }: { data: IndikatorItem[] }) {
               <th className="p-2 text-left">Kategori</th>
               <th className="p-2 text-left">Eviden</th>
               <th className="p-2 text-left">Status</th>
+              <th className="p-2 text-left">Keterangan</th>
             </tr>
           </thead>
           <tbody>

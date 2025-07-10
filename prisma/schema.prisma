@@ -50,7 +50,7 @@ model attb {
 }
 
 model ao {
-  id        Int     @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   tahun     String
   semester  String
   target    BigInt
