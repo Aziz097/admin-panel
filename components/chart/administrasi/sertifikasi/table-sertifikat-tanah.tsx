@@ -17,8 +17,8 @@ export function TableSertifikatTanah({ data }: { data: SertifikatItem[] }) {
         <table className="min-w-[340px] w-full text-sm">
           <thead className="bg-muted text-zinc-700">
             <tr>
-              <th className="p-2 text-left">No</th>
-              <th className="p-2 text-left">Nama Sertifikat</th>
+              <th className="p-2 text-left">No Sertifikat</th>
+              <th className="p-2 text-left">Nama Tower</th>
               <th className="p-2 text-left">Status</th>
               <th className="p-2 text-left">Keterangan</th>
             </tr>

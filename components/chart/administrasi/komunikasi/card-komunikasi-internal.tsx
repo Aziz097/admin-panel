@@ -1,24 +1,36 @@
-"use client"
-import { Card } from "@/components/ui/card"
-import { CheckCircle, AlertCircle } from "lucide-react"
+'use client';
+import { Card } from '@/components/ui/card';
+import { CheckCircle, AlertCircle } from 'lucide-react';
 
-export function CardKomunikasiInternal({ status = "pending", bulan = "Juni", tahun = "2024" }: {
-  status?: "done" | "pending"; bulan?: string; tahun?: string;
+export function CardKomunikasiInternal({
+    status = 'pending',
+    bulan = 'Juni',
+    tahun = '2024',
+}: {
+    status?: 'done' | 'pending';
+    bulan?: string;
+    tahun?: string;
 }) {
-  return (
-    <Card className="rounded-2xl border border-zinc-200 bg-white px-6 py-6 shadow-none flex flex-col min-h-[190px] relative">
-      <div>
-        <div className="font-bold text-lg text-black">Share Berita Internal</div>
-        <div className="text-sm text-zinc-500 mb-2">{bulan} - {tahun}</div>
-      </div>
-      <div className="absolute right-11 bottom-9 flex flex-col items-end">
-        {status === "done" ? (
-          <CheckCircle className="w-22 h-22 text-black" strokeWidth={2.2} />
-        ) : (
-          <AlertCircle className="w-22 h-22 text-black" strokeWidth={2.2} />
-        )}
-      </div>
-      <div className="mt-10 text-base text-black font-medium">{status === "done" ? "Sudah Dishare!" : "Belum Dishare!"}</div>
-    </Card>
-  )
+    return (
+        <Card className="rounded-2xl border border-zinc-200 bg-white px-6 py-6 shadow-none flex flex-col min-h-[190px] relative">
+            <div>
+                <div className="font-bold text-lg text-black">Share Berita Internal</div>
+                <div className="text-sm text-zinc-500 mb-2">
+                    {bulan} - {tahun}
+                </div>
+            </div>
+            <div className="flex flex-row-reverse items-end justify-between">
+                <div className="flex flex-col items-end">
+                    {status === 'done' ? (
+                        <CheckCircle className="w-22 h-22 text-black" strokeWidth={2.2} />
+                    ) : (
+                        <AlertCircle className="w-22 h-22 text-black" strokeWidth={2.2} />
+                    )}
+                </div>
+                <div className=" text-base text-black font-medium">
+                    {status === 'done' ? 'Sudah Dishare!' : 'Belum Dishare!'}
+                </div>
+            </div>
+        </Card>
+    );
 }

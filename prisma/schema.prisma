@@ -1,16 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
 }
 
@@ -20,10 +14,9 @@ model User {
   email     String    @unique
   password  String
   image     String?
-  accounts  Account[]
-
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  accounts  Account[]
 }
 
 model Account {
@@ -39,53 +32,101 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
 
 model attb {
-  id        Int       @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   tahun     String
   semester  String
-  target    Int
-  realisasi Int?
+  target    BigInt
+  realisasi BigInt?
 
   @@unique([tahun, semester])
 }
 
 model ao {
-  id        Int       @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   tahun     String
   semester  String
-  target    Int
-  realisasi Int?
+  target    BigInt
+  realisasi BigInt?
 
   @@unique([tahun, semester])
 }
 
 model aki {
-  id        Int       @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   tahun     String
   bulan     String
-  target    Int
-  realisasi Int?
-  
+  target    BigInt
+  realisasi BigInt?
+
   @@unique([tahun, bulan])
 }
 
 model optimasi {
-  id         Int      @id @default(autoincrement())
-  tahun      String
-  bulan      String
-  kategori   String
-  penetapan  Int
-  optimasi   Int?
-  realisasi  Int?
+  id        Int     @id @default(autoincrement())
+  tahun     String
+  bulan     String
+  kategori  String
+  penetapan BigInt
+  optimasi  BigInt?
+  realisasi BigInt?
 
-  @@unique([tahun, bulan])
+  @@unique([tahun, bulan, kategori])
+}
+
+model Komunikasi {
+  id            Int    @id @default(autoincrement())
+  namaIndikator String
+  tahun         String
+  bulan         String
+  target        Int
+  realisasi     Int?
+}
+
+model Sertifikasi {
+  id            Int    @id @default(autoincrement())
+  nomor         String
+  nama          String
+  status        String
+  keterangan    String
+  tahun         String
+  bulan         String
+}
+
+model Kepatuhan {
+  id            Int    @id @default(autoincrement())
+  indikator     String
+  kategori      String
+  target        Int
+  realisasi     Int?
+  tahun         String
+  bulan         String
+  keterangan    String?
+}
+
+model tjsl {
+  id            Int    @id @default(autoincrement())
+  tahun         String
+  bulan         String
+  status        Boolean @default(false)
+  pegawaiId     Int
+  pegawai       Pegawai @relation(fields: [pegawaiId], references: [id], onDelete: Cascade)
+
+  @@unique([pegawaiId, tahun, bulan])
+}
+
+model Pegawai {
+  id            Int    @id @default(autoincrement())
+  nama          String
+  nip           String @unique
+  jabatan       String
+
+  laporantjsl tjsl[]
 }
