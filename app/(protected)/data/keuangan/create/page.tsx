@@ -325,7 +325,7 @@ export default function CreateKeuanganPage() {
                 + Tambah Baris
               </Button>
               <Button
-                className="w-full sm:w-auto mt-2 sm:mt-0 cursor-pointer"
+                className="w-full bg-sky-400 hover:bg-sky-600 sm:w-auto mt-2 sm:mt-0 cursor-pointer"
                 onClick={handleSubmit}
               >
                 Simpan

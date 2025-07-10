@@ -92,14 +92,30 @@ export async function GET(req: NextRequest) {
       where: tahun ? { tahun } : undefined,
     });
 
+    // Define month order for sorting (only for models that have bulan)
+    const monthOrder = [
+      "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+      "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+    ];
+
+    // Sort the data based on the 'bulan' if available (optimasi, aki, etc.)
+    const sortedData = data.sort((a, b) => {
+      if ('bulan' in a && 'bulan' in b) {
+        return monthOrder.indexOf(a.bulan) - monthOrder.indexOf(b.bulan);
+      }
+      return 0; // If no bulan property, leave the order as is
+    });
+
     return NextResponse.json(
-      data.map((item) => ({ ...normalizeBigInt(item), type }))
+      sortedData.map((item) => ({ ...normalizeBigInt(item), type }))
     );
   } catch (error) {
     console.error(`Error fetching ${type} data:`, error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+
 
 // POST
 export async function POST(req: NextRequest) {

@@ -143,7 +143,9 @@ const actionColumn: ColumnDef<any> = {
         const failed = results.some((res) => !res.ok)
         if (failed) throw new Error()
         toast.success("Data berhasil dihapus.")
-        window.location.reload()
+        setTimeout(() => {
+          window.location.reload()
+        }, 1000)
       } catch (err) {
         toast.error("Gagal menghapus data.")
       } finally {

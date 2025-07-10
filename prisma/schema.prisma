@@ -112,11 +112,20 @@ model Sertifikasi {
 }
 
 model tjsl {
-  id      Int     @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
+  tahun     String
+  bulan     String
+  status    Boolean @default(false)
+  pegawaiId Int
+  Pegawai   Pegawai @relation(fields: [pegawaiId], references: [id], onDelete: Cascade)
+
+  @@unique([pegawaiId, tahun, bulan])
+}
+
+model Pegawai {
+  id      Int    @id @default(autoincrement())
   nama    String
-  nip     String
+  nip     String @unique
   jabatan String
-  tahun   String
-  bulan   String
-  status  Boolean
+  tjsl    tjsl[]
 }

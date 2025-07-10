@@ -95,7 +95,7 @@ export function LoginForm({
           </div>
         )}
 
-        <Button type="submit" className="w-full bg-sky-400" disabled={loading}>
+        <Button type="submit" className="w-full bg-sky-400 hover:bg-sky-600" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </Button>
       </div>
