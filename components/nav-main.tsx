@@ -44,7 +44,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
                       tooltip={item.title}
-                      className="flex items-center w-full gap-2 px-3 py-2"
+                      className="flex items-center w-full gap-2 px-3 py-2 cursor-pointer"
                     >
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {item.icon && <item.icon className="w-4 h-4 shrink-0" />}
@@ -60,7 +60,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
                           <SidebarMenuSubButton asChild>
                             <button
                               onClick={() => router.push(subItem.url)}
-                              className="pl-4 py-1.5 text-sm w-full text-left rounded-md transition-colors hover:bg-muted"
+                              className="pl-4 py-1.5 text-sm w-full text-left rounded-md transition-colors hover:bg-muted cursor-pointer"
                             >
                               {subItem.title}
                             </button>
@@ -76,7 +76,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
                 <SidebarMenuButton
                   asChild
                   tooltip={item.title}
-                  className="flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors hover:bg-muted"
+                  className="flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors hover:bg-muted cursor-pointer"
                 >
                   <button
                     onClick={() => item.url && router.push(item.url)}

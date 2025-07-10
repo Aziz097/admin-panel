@@ -8,6 +8,7 @@ import { signInAction } from "@/lib/actions"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
+import { toast } from "sonner" // Import toast
 
 export function LoginForm({
   className,
@@ -31,9 +32,11 @@ export function LoginForm({
 
     if (res.error) {
       setError(res.error)
+      toast.error(res.error) // Show error toast
       return
     }
 
+    toast.success("Login successful!") // Show success toast
     window.location.href = "/dashboard"
   }
 
@@ -41,7 +44,11 @@ export function LoginForm({
     <form
       className={cn("flex flex-col gap-6", className)}
       {...props}
-      action={handleFormSubmit}
+      onSubmit={(e) => {
+        e.preventDefault()
+        const formData = new FormData(e.target as HTMLFormElement)
+        handleFormSubmit(formData)
+      }}
     >
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Login to your account</h1>

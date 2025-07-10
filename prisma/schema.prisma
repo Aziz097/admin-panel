@@ -50,7 +50,7 @@ model attb {
 }
 
 model ao {
-  id        Int     @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   tahun     String
   semester  String
   target    BigInt
@@ -81,6 +81,17 @@ model optimasi {
   @@unique([tahun, bulan, kategori])
 }
 
+model Kepatuhan {
+  id         Int     @id @default(autoincrement())
+  indikator  String
+  kategori   String
+  target     Int
+  realisasi  Int?
+  tahun      String
+  bulan      String
+  keterangan String?
+}
+
 model Komunikasi {
   id            Int    @id @default(autoincrement())
   namaIndikator String
@@ -91,42 +102,21 @@ model Komunikasi {
 }
 
 model Sertifikasi {
-  id            Int    @id @default(autoincrement())
-  nomor         String
-  nama          String
-  status        String
-  keterangan    String
-  tahun         String
-  bulan         String
-}
-
-model Kepatuhan {
-  id            Int    @id @default(autoincrement())
-  indikator     String
-  kategori      String
-  target        Int
-  realisasi     Int?
-  tahun         String
-  bulan         String
-  keterangan    String?
+  id         Int    @id @default(autoincrement())
+  nomor      String
+  nama       String
+  status     String
+  keterangan String
+  tahun      String
+  bulan      String
 }
 
 model tjsl {
-  id            Int    @id @default(autoincrement())
-  tahun         String
-  bulan         String
-  status        Boolean @default(false)
-  pegawaiId     Int
-  pegawai       Pegawai @relation(fields: [pegawaiId], references: [id], onDelete: Cascade)
-
-  @@unique([pegawaiId, tahun, bulan])
-}
-
-model Pegawai {
-  id            Int    @id @default(autoincrement())
-  nama          String
-  nip           String @unique
-  jabatan       String
-
-  laporantjsl tjsl[]
+  id      Int     @id @default(autoincrement())
+  nama    String
+  nip     String
+  jabatan String
+  tahun   String
+  bulan   String
+  status  Boolean
 }

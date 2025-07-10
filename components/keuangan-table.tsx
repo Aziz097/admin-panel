@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import {
   ColumnDef,
@@ -11,6 +13,7 @@ import {
   ColumnFiltersState,
   VisibilityState,
 } from "@tanstack/react-table"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogTrigger,
@@ -63,6 +66,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter, useSearchParams } from "next/navigation"
+import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 export type KeuanganType = "optimasi" | "aki" | "ao" | "attb"
@@ -151,7 +155,7 @@ const actionColumn: ColumnDef<any> = {
       <div className="w-full h-full flex items-center justify-end pr-2">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="cursor-pointer">
               <IconDotsVertical />
               <span className="sr-only">Open menu</span>
             </Button>
@@ -159,6 +163,15 @@ const actionColumn: ColumnDef<any> = {
           <DropdownMenuContent align="end" className="w-32">
             <DropdownMenuItem
               className="cursor-pointer"
+              onSelect={(e) => {
+                e.preventDefault()
+                const { id, type } = row.original
+                if (!id || !type) {
+                  toast.error("ID atau type tidak ditemukan.")
+                  return
+                }
+                router.push(`/data/keuangan/edit/${id}?type=${type}`)
+              }}
             >
               Edit
             </DropdownMenuItem>
@@ -185,8 +198,8 @@ const actionColumn: ColumnDef<any> = {
                     : "Hapus baris ini? Tindakan ini tidak bisa dibatalkan."}
                 </p>
                 <DialogFooter className="mt-4">
-                  <Button variant="outline" onClick={() => setOpen(false)}>Batal</Button>
-                  <Button variant="destructive" onClick={handleDelete}>Hapus</Button>
+                  <Button className="cursor-pointer" variant="outline" onClick={() => setOpen(false)}>Batal</Button>
+                  <Button className="cursor-pointer" variant="destructive" onClick={handleDelete}>Hapus</Button>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -208,8 +221,18 @@ export function DataTable() {
     ALLOWED_TYPES.includes(typeFromURL) ? typeFromURL : "optimasi"
   )
 
+  const [isLoading, setIsLoading] = React.useState(true)
   const [data, setData] = React.useState<any[]>([])
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const sorting = React.useMemo<SortingState>(() => {
+    if (type === "ao" || type === "attb") {
+      return [{ id: "tahun", desc: false }]
+    }
+    return [
+      { id: "bulan", desc: false },
+      { id: "tahun", desc: false }
+    ]
+  }, [type])
+
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 })
@@ -218,7 +241,27 @@ export function DataTable() {
 
   const baseColumns: ColumnDef<any>[] = [
     { accessorKey: "tahun", header: "Tahun" },
-    { accessorKey: "bulan", header: "Bulan" },
+    {
+    accessorKey: "bulan",
+    header: "Bulan",
+    sortingFn: (rowA, rowB, columnId) => {
+      const order = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+      ];
+
+      const bulanA = rowA.getValue(columnId) as string;
+      const bulanB = rowB.getValue(columnId) as string;
+      const tahunA = Number(rowA.original.tahun);
+      const tahunB = Number(rowB.original.tahun);
+
+      if (tahunA !== tahunB) {
+        return tahunB - tahunA;
+      }
+
+      return order.indexOf(bulanA) - order.indexOf(bulanB);
+      }
+    },
     { accessorKey: "semester", header: "Semester" },
     {
       accessorKey: "kategori",
@@ -257,16 +300,20 @@ export function DataTable() {
 
   React.useEffect(() => {
     async function fetchData() {
+      setIsLoading(true)
       try {
         const res = await fetch(`/api/keuangan?type=${type}`)
         const json = await res.json()
         setData(json)
       } catch {
         toast.error("Gagal memuat data.")
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchData()
   }, [type])
+
 
   const years = React.useMemo(() => {
     const allYears = data.map((item) => item.tahun).filter(Boolean)
@@ -283,18 +330,84 @@ export function DataTable() {
   const table = useReactTable({
     data: filteredData,
     columns: columnsMap[type],
-    state: { sorting, columnFilters, columnVisibility, pagination },
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      pagination,
+    },
     getRowId: (row) => row.id?.toString() ?? `${Math.random()}`,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
+    // ✅ Remove this line:
+    // onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
     enableRowSelection: true,
   })
+
+
+  if (isLoading) {
+    const currentColumns = columnsMap[type] || []
+
+    return (
+      <div className="w-full flex flex-col gap-4 overflow-auto px-4 lg:px-6 py-6">
+        {/* Optional: mimic the filter bar if you want */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex gap-2 flex-wrap">
+            <Skeleton className="h-9 w-[160px]" />
+            <Skeleton className="h-9 w-[135px]" />
+            {type === "optimasi" && (
+              <Skeleton className="h-9 w-[230px]" />
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-[140px]" />
+            <Skeleton className="h-9 w-[120px]" />
+          </div>
+        </div>
+
+        <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader className="bg-muted">
+              <TableRow>
+                {currentColumns.map((_, i) => (
+                  <TableHead key={i}>
+                    <Skeleton className="h-4 w-[90px]" />
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[...Array(6)].map((_, rowIndex) => (
+                <TableRow key={rowIndex} className="h-12">
+                  {currentColumns.map((_, colIndex) => (
+                    <TableCell key={colIndex}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Optional: pagination mimic */}
+        <div className="flex justify-between items-center px-4">
+          <Skeleton className="h-5 w-40 hidden lg:block" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md" />
+            <Skeleton className="h-8 w-8 rounded-md hidden lg:block" />
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <Tabs
@@ -306,27 +419,27 @@ export function DataTable() {
       }}
       className="w-full flex-col gap-6 py-4 lg:py-6"
     >
-<div className="flex flex-wrap items-center justify-between gap-4 px-4 lg:px-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 px-4 lg:px-6">
         <div className="flex gap-2 flex-wrap">
           <Select value={type} onValueChange={(val) => setType(val as KeuanganType)}>
-            <SelectTrigger className="w-[160px]" size="sm">
+            <SelectTrigger className="w-[160px] cursor-pointer" size="sm">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="optimasi">Optimasi 5.4</SelectItem>
-              <SelectItem value="aki">Disburse AKI</SelectItem>
-              <SelectItem value="ao">Penarikan AO</SelectItem>
-              <SelectItem value="attb">Penyerapan ATTB</SelectItem>
+            <SelectContent >
+              <SelectItem className="cursor-pointer" value="optimasi">Optimasi 5.4</SelectItem>
+              <SelectItem className="cursor-pointer" value="aki">Disburse AKI</SelectItem>
+              <SelectItem className="cursor-pointer" value="ao">Penyerapan AO</SelectItem>
+              <SelectItem className="cursor-pointer" value="attb">Penarikan ATTB</SelectItem>
             </SelectContent>
           </Select>
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-[135px]" size="sm">
+            <SelectTrigger className="w-[135px] cursor-pointer" size="sm">
               <SelectValue placeholder="Pilih Tahun" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Semua Tahun</SelectItem>
+              <SelectItem className="cursor-pointer" value="all">Semua Tahun</SelectItem>
               {years.map((year) => (
-                <SelectItem key={year} value={year.toString()}>
+                <SelectItem className="cursor-pointer" key={year} value={year.toString()}>
                   {year}
                 </SelectItem>
               ))}
@@ -334,13 +447,13 @@ export function DataTable() {
           </Select>
           {type === "optimasi" && (
             <Select value={selectedKategori} onValueChange={setSelectedKategori}>
-              <SelectTrigger className="w-[230px]" size="sm">
+              <SelectTrigger className="w-[230px] cursor-pointer" size="sm">
                 <SelectValue placeholder="Pilih Kategori" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Semua Kategori</SelectItem>
+                <SelectItem value="all" className="cursor-pointer">Semua Kategori</SelectItem>
                 {KATEGORI_OPTIONS.map((k) => (
-                  <SelectItem key={k} value={k}>
+                  <SelectItem className="cursor-pointer" key={k} value={k}>
                     {k}
                   </SelectItem>
                 ))}
@@ -351,7 +464,7 @@ export function DataTable() {
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="cursor-pointer">
                 <IconLayoutColumns />
                 <span className="hidden lg:inline">Filter Columns</span>
                 <IconChevronDown />
@@ -373,6 +486,7 @@ export function DataTable() {
             </DropdownMenuContent>
           </DropdownMenu>
           <Button
+            className="cursor-pointer"
             variant="outline"
             size="sm"
             onClick={() => router.push(`/data/keuangan/create?type=${type}`)}

@@ -41,7 +41,7 @@ export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
   return (
     <header className="flex h-(--header-height) shrink-0 items-center border-b transition-[width,height] ease-linear px-2 sm:px-4">
       <div className="flex w-full items-center gap-1 lg:gap-2">
-        <SidebarTrigger className="-ml-1" />
+        <SidebarTrigger className="-ml-1 cursor-pointer" />
         <Separator orientation="vertical" className="mx-2 hidden sm:block data-[orientation=vertical]:h-4" />
 
         {/* Segmented tabs langsung setelah sidebar trigger */}
@@ -67,6 +67,7 @@ export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
                   key={opt.value}
                   value={opt.value}
                   className={`
+                    cursor-pointer
                     rounded-sm
                     px-3 py-1.5
                     text-base font-semibold
@@ -95,7 +96,7 @@ export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
           {/* Select Tahun */}
           {tahun && setTahun && (
             <Select value={tahun} onValueChange={(val) => setTahun(val)}>
-              <SelectTrigger className="w-[100px] h-9">
+              <SelectTrigger className="w-[100px] h-9 cursor-pointer">
                 <SelectValue placeholder="Tahun" />
               </SelectTrigger>
               <SelectContent>
@@ -114,7 +115,7 @@ export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
               href="https://github.com/shadcn-ui/ui/tree/main/apps/v4/app/(examples)/dashboard"
               rel="noopener noreferrer"
               target="_blank"
-              className="dark:text-foreground"
+              className="dark:text-foreground cursor-pointer"
             >
               GitHub
             </a>
