@@ -27,7 +27,7 @@ const dashboardOptions = [
   { label: "Keuangan", value: "/dashboard/keuangan" },
 ];
 
-const tahunList = ["2023", "2024"]
+const tahunList = ["2023", "2024", "2025", "2026", "2027", "2028", "2029", "2030"];
 
 export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
   const router = useRouter();

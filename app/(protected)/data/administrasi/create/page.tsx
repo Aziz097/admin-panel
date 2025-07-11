@@ -18,9 +18,10 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { toast } from "sonner"
+import { IconTrash } from "@tabler/icons-react"
 
-// **DIUBAH**: Menambahkan 'tjsl' ke tipe
-export type AdministrasiType = "komunikasi" | "sertifikasi" | "kepatuhan" | "tjsl";
+// **DIUBAH**: Menghapus 'tjsl' dan menambahkan 'ocr'
+export type AdministrasiType = "komunikasi" | "sertifikasi" | "kepatuhan" | "ocr";
 
 const INDIKATOR_KOMUNIKASI_OPTIONS = [
     "Release Berita",
@@ -31,11 +32,14 @@ const INDIKATOR_KOMUNIKASI_OPTIONS = [
     "Laporan Permintaan Publik",
 ];
 
-// **DIUBAH**: Menambahkan semua field dari semua model
+// **BARU**: Opsi untuk Kategori OCR
+const KATEGORI_OCR_OPTIONS = ["KC", "COP", "KP", "Inovasi"];
+
+// **DIUBAH**: Menghapus field tjsl dan menambahkan field ocr
 const EMPTY_ROW = {
   tahun: "",
   bulan: "",
-  nama: "",
+  semester: "",
   keterangan: "",
   // Komunikasi
   namaIndikator: "",
@@ -43,13 +47,13 @@ const EMPTY_ROW = {
   realisasi: "",
   // Sertifikasi
   nomor: "",
+  nama: "",
   status: "",
   // Kepatuhan
   indikator: "",
   kategori: "",
-  // TJSL
-  nip: "",
-  jabatan: "",
+  // OCR
+  kategoriOCR: "",
 };
 
 export default function CreateAdministrasiPage() {
@@ -60,7 +64,8 @@ export default function CreateAdministrasiPage() {
 
   useEffect(() => {
     const typeFromURL = searchParams.get("type") as AdministrasiType
-    if (typeFromURL && ["komunikasi", "sertifikasi", "kepatuhan", "tjsl"].includes(typeFromURL)) {
+    // **DIUBAH**: Memperbarui array tipe yang diizinkan
+    if (typeFromURL && ["komunikasi", "sertifikasi", "kepatuhan", "ocr"].includes(typeFromURL)) {
       setType(typeFromURL)
     }
   }, [searchParams])
@@ -77,6 +82,7 @@ export default function CreateAdministrasiPage() {
   const handleSubmit = async () => {
     try {
       const sanitizedRows = rows.map((r) => {
+        // Data yang umum untuk beberapa model
         const commonData = {
           tahun: r.tahun,
           bulan: r.bulan,
@@ -107,14 +113,14 @@ export default function CreateAdministrasiPage() {
               realisasi: r.realisasi ? parseInt(r.realisasi, 10) : null,
               keterangan: r.keterangan || null,
             }
-          // **BARU**: Logika untuk payload TJSL
-          case "tjsl":
+          // **BARU**: Logika untuk payload OCR
+          case "ocr":
             return {
-                ...commonData,
-                nama: r.nama,
-                nip: r.nip,
-                jabatan: r.jabatan,
-                status: r.status === 'true', // Konversi string 'true'/'false' ke boolean
+              tahun: r.tahun,
+              semester: r.semester,
+              kategoriOCR: r.kategoriOCR,
+              target: parseInt(r.target, 10) || 0,
+              realisasi: r.realisasi ? parseInt(r.realisasi, 10) : null,
             }
           default:
             return {}
@@ -129,7 +135,7 @@ export default function CreateAdministrasiPage() {
 
       if (!res.ok) {
         const errorData = await res.json()
-        throw new Error(errorData.message || "Gagal menambahkan data")
+        throw new Error(errorData.error || "Gagal menambahkan data")
       }
 
       toast.success("Data berhasil ditambahkan")
@@ -168,8 +174,8 @@ export default function CreateAdministrasiPage() {
                 <SelectItem value="komunikasi">Komunikasi</SelectItem>
                 <SelectItem value="sertifikasi">Sertifikasi Tanah</SelectItem>
                 <SelectItem value="kepatuhan">Kepatuhan</SelectItem>
-                {/* **BARU**: Opsi TJSL */}
-                <SelectItem value="tjsl">TJSL</SelectItem>
+                {/* **BARU**: Opsi OCR */}
+                <SelectItem value="ocr">OCR</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -181,18 +187,32 @@ export default function CreateAdministrasiPage() {
                 {/* --- Common Fields --- */}
                 <div className="w-full">
                   <Label className="mb-1 block">Tahun</Label>
-                  <Input type="number" value={form.tahun} onChange={(e) => handleChange(index, "tahun", e.target.value)} placeholder="Contoh: 2024" className="w-full" />
+                  <Input type="number" value={form.tahun} onChange={(e) => handleChange(index, "tahun", e.target.value)} placeholder="Masukan Tahun" className="w-full" />
                 </div>
 
-                <div className="w-full">
-                  <Label className="mb-1 block">Bulan</Label>
-                  <Select value={form.bulan} onValueChange={(val) => handleChange(index, "bulan", val)}>
-                    <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Bulan" /></SelectTrigger>
-                    <SelectContent>
-                      {["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"].map((b) => (<SelectItem key={b} value={b}>{getMonthName(b)}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {/* **DIUBAH**: Menampilkan Bulan atau Semester secara kondisional */}
+                {type !== 'ocr' ? (
+                    <div className="w-full">
+                        <Label className="mb-1 block">Bulan</Label>
+                        <Select value={form.bulan} onValueChange={(val) => handleChange(index, "bulan", val)}>
+                        <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Bulan" /></SelectTrigger>
+                        <SelectContent>
+                            {["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"].map((b) => (<SelectItem key={b} value={b}>{getMonthName(b)}</SelectItem>))}
+                        </SelectContent>
+                        </Select>
+                    </div>
+                ) : (
+                    <div className="w-full">
+                        <Label className="mb-1 block">Semester</Label>
+                        <Select value={form.semester} onValueChange={(val) => handleChange(index, "semester", val)}>
+                        <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Semester" /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="1">Semester 1</SelectItem>
+                            <SelectItem value="2">Semester 2</SelectItem>
+                        </SelectContent>
+                        </Select>
+                    </div>
+                )}
                 
                 {/* --- Dynamic Fields based on Type --- */}
 
@@ -212,7 +232,7 @@ export default function CreateAdministrasiPage() {
                       <Input type="number" value={form.target} onChange={(e) => handleChange(index, "target", e.target.value)} placeholder="Jumlah Target" className="w-full"/>
                     </div>
                     <div className="w-full">
-                      <Label className="mb-1 block">Realisasi (Opsional)</Label>
+                      <Label className="mb-1 block">Realisasi</Label>
                       <Input type="number" value={form.realisasi} onChange={(e) => handleChange(index, "realisasi", e.target.value)} placeholder="Jumlah Realisasi" className="w-full"/>
                     </div>
                   </>
@@ -260,40 +280,35 @@ export default function CreateAdministrasiPage() {
                         <Input type="number" value={form.target} onChange={(e) => handleChange(index, "target", e.target.value)} placeholder="Jumlah Target" className="w-full" />
                     </div>
                     <div className="w-full">
-                        <Label className="mb-1 block">Realisasi (Opsional)</Label>
+                        <Label className="mb-1 block">Realisasi</Label>
                         <Input type="number" value={form.realisasi} onChange={(e) => handleChange(index, "realisasi", e.target.value)} placeholder="Jumlah Realisasi" className="w-full" />
                     </div>
                     <div className="md:col-span-2">
-                      <Label className="mb-1 block">Keterangan (Opsional)</Label>
+                      <Label className="mb-1 block">Keterangan</Label>
                       <Input value={form.keterangan} onChange={(e) => handleChange(index, "keterangan", e.target.value)} placeholder="Keterangan Tambahan" className="w-full"/>
                     </div>
                   </>
                 )}
 
-                {/* **BARU**: Form untuk TJSL */}
-                {type === "tjsl" && (
+                {/* **BARU**: Form untuk OCR */}
+                {type === "ocr" && (
                   <>
-                    <div className="w-full">
-                      <Label className="mb-1 block">Nama</Label>
-                      <Input value={form.nama} onChange={(e) => handleChange(index, "nama", e.target.value)} placeholder="Nama Lengkap" className="w-full"/>
+                    <div className="md:col-span-2">
+                      <Label className="mb-1 block">Kategori OCR</Label>
+                      <Select value={form.kategoriOCR} onValueChange={(val) => handleChange(index, "kategoriOCR", val)}>
+                          <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Kategori OCR" /></SelectTrigger>
+                          <SelectContent>
+                              {KATEGORI_OCR_OPTIONS.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
+                          </SelectContent>
+                      </Select>
                     </div>
                     <div className="w-full">
-                      <Label className="mb-1 block">NIP</Label>
-                      <Input value={form.nip} onChange={(e) => handleChange(index, "nip", e.target.value)} placeholder="Nomor Induk Pegawai" className="w-full"/>
+                      <Label className="mb-1 block">Target</Label>
+                      <Input type="number" value={form.target} onChange={(e) => handleChange(index, "target", e.target.value)} placeholder="Jumlah Target" className="w-full"/>
                     </div>
                     <div className="w-full">
-                      <Label className="mb-1 block">Jabatan</Label>
-                      <Input value={form.jabatan} onChange={(e) => handleChange(index, "jabatan", e.target.value)} placeholder="Jabatan" className="w-full"/>
-                    </div>
-                    <div className="w-full">
-                      <Label className="mb-1 block">Status</Label>
-                       <Select value={form.status} onValueChange={(val) => handleChange(index, "status", val)}>
-                         <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
-                         <SelectContent>
-                           <SelectItem value="true">Aktif</SelectItem>
-                           <SelectItem value="false">Tidak Aktif</SelectItem>
-                         </SelectContent>
-                       </Select>
+                      <Label className="mb-1 block">Realisasi</Label>
+                      <Input type="number" value={form.realisasi} onChange={(e) => handleChange(index, "realisasi", e.target.value)} placeholder="Jumlah Realisasi" className="w-full"/>
                     </div>
                   </>
                 )}
@@ -301,8 +316,11 @@ export default function CreateAdministrasiPage() {
               </div>
 
               {rows.length > 1 && (
-                <div className="pt-4 mt-4 border-t">
-                  <Button variant="destructive" size="sm" onClick={() => removeRow(index)}>Hapus Baris Ini</Button>
+                <div className="pt-4 mt-4 border-t flex">
+                  <Button variant="destructive" size="sm" onClick={() => removeRow(index)}>
+                    <IconTrash className="w-4 h-4 mr-2" />
+                    Hapus
+                  </Button>
                 </div>
               )}
             </Card>

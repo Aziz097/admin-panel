@@ -50,7 +50,7 @@ model attb {
 }
 
 model ao {
-  id        Int       @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   tahun     String
   semester  String
   target    BigInt
@@ -114,12 +114,12 @@ model Sertifikasi {
 model tjsl {
   id        Int     @id @default(autoincrement())
   tahun     String
-  bulan     String
+  semester  String
   status    Boolean @default(false)
   pegawaiId Int
   Pegawai   Pegawai @relation(fields: [pegawaiId], references: [id], onDelete: Cascade)
 
-  @@unique([pegawaiId, tahun, bulan])
+  @@unique([pegawaiId, tahun, semester])
 }
 
 model Pegawai {
@@ -128,4 +128,15 @@ model Pegawai {
   nip     String @unique
   jabatan String
   tjsl    tjsl[]
+}
+
+model ocr {
+  id          Int      @id @default(autoincrement())
+  tahun       String
+  semester    String
+  target      Int
+  realisasi   Int?
+  kategoriOCR String
+
+  @@unique([tahun, semester, kategoriOCR])
 }

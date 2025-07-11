@@ -3,7 +3,7 @@ import * as React from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { DataTable } from '@/components/data-table-administrasi'; // ✅ Use as-is, no props
+import { DataTable } from '@/components/data-table-administrasi';
 
 export default function Page() {
     return (
