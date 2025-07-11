@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { Input } from "@/components/ui/input"
+import * as React from "react";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Card } from "@/components/ui/card"
-import { AppSidebar } from "@/components/app-sidebar"
-import { SiteHeader } from "@/components/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { toast } from "sonner"
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { toast } from "sonner";
 
 // **DIUBAH**: Menambahkan 'tjsl' ke tipe
 export type AdministrasiType = "komunikasi" | "sertifikasi" | "kepatuhan" | "tjsl";
@@ -33,7 +33,7 @@ const INDIKATOR_KOMUNIKASI_OPTIONS = [
 
 // **DIUBAH**: Menambahkan semua field dari semua model
 const EMPTY_ROW = {
-  tahun: "",
+  tahun: new Date().getFullYear().toString(), // Preload current year
   bulan: "",
   nama: "",
   keterangan: "",
@@ -53,26 +53,26 @@ const EMPTY_ROW = {
 };
 
 export default function CreateAdministrasiPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [type, setType] = useState<AdministrasiType>("komunikasi")
-  const [rows, setRows] = useState<any[]>([EMPTY_ROW])
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [type, setType] = useState<AdministrasiType>("komunikasi");
+  const [rows, setRows] = useState<any[]>([EMPTY_ROW]);
 
   useEffect(() => {
-    const typeFromURL = searchParams.get("type") as AdministrasiType
+    const typeFromURL = searchParams.get("type") as AdministrasiType;
     if (typeFromURL && ["komunikasi", "sertifikasi", "kepatuhan", "tjsl"].includes(typeFromURL)) {
-      setType(typeFromURL)
+      setType(typeFromURL);
     }
-  }, [searchParams])
+  }, [searchParams]);
 
   const handleChange = (index: number, field: string, value: string | boolean) => {
     setRows((prev) =>
       prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
-    )
-  }
+    );
+  };
 
-  const addRow = () => setRows([...rows, EMPTY_ROW])
-  const removeRow = (index: number) => setRows(rows.filter((_, i) => i !== index))
+  const addRow = () => setRows([...rows, EMPTY_ROW]);
+  const removeRow = (index: number) => setRows(rows.filter((_, i) => i !== index));
 
   const handleSubmit = async () => {
     try {
@@ -80,7 +80,7 @@ export default function CreateAdministrasiPage() {
         const commonData = {
           tahun: r.tahun,
           bulan: r.bulan,
-        }
+        };
 
         switch (type) {
           case "komunikasi":
@@ -89,7 +89,7 @@ export default function CreateAdministrasiPage() {
               namaIndikator: r.namaIndikator,
               target: parseInt(r.target, 10) || 0,
               realisasi: r.realisasi ? parseInt(r.realisasi, 10) : null,
-            }
+            };
           case "sertifikasi":
             return {
               ...commonData,
@@ -97,7 +97,7 @@ export default function CreateAdministrasiPage() {
               nama: r.nama,
               status: r.status,
               keterangan: r.keterangan,
-            }
+            };
           case "kepatuhan":
             return {
               ...commonData,
@@ -106,7 +106,7 @@ export default function CreateAdministrasiPage() {
               target: parseInt(r.target, 10) || 0,
               realisasi: r.realisasi ? parseInt(r.realisasi, 10) : null,
               keterangan: r.keterangan || null,
-            }
+            };
           // **BARU**: Logika untuk payload TJSL
           case "tjsl":
             return {
@@ -115,30 +115,30 @@ export default function CreateAdministrasiPage() {
                 nip: r.nip,
                 jabatan: r.jabatan,
                 status: r.status === 'true', // Konversi string 'true'/'false' ke boolean
-            }
+            };
           default:
-            return {}
+            return {};
         }
-      })
+      });
 
       const res = await fetch(`/api/administrasi?type=${type}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sanitizedRows),
-      })
+      });
 
       if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.message || "Gagal menambahkan data")
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Gagal menambahkan data");
       }
 
-      toast.success("Data berhasil ditambahkan")
-      router.push(`/data/administrasi?type=${type}`)
+      toast.success("Data berhasil ditambahkan");
+      router.push(`/data/administrasi?type=${type}`);
       router.refresh();
     } catch (error: any) {
-      toast.error(error.message || "Terjadi kesalahan saat menyimpan.")
+      toast.error(error.message || "Terjadi kesalahan saat menyimpan.");
     }
-  }
+  };
 
   const getMonthName = (monthNum: string): string => {
     if (!monthNum) return "";
@@ -157,11 +157,11 @@ export default function CreateAdministrasiPage() {
             <Select
               value={type}
               onValueChange={(val) => {
-                setType(val as AdministrasiType)
-                setRows([EMPTY_ROW])
+                setType(val as AdministrasiType);
+                setRows([EMPTY_ROW]);
               }}
             >
-              <SelectTrigger className="w-full sm:w-[220px]">
+              <SelectTrigger className="w-full sm:w-[220px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm">
                 <SelectValue placeholder="Pilih Tipe" />
               </SelectTrigger>
               <SelectContent>
@@ -187,7 +187,7 @@ export default function CreateAdministrasiPage() {
                 <div className="w-full">
                   <Label className="mb-1 block">Bulan</Label>
                   <Select value={form.bulan} onValueChange={(val) => handleChange(index, "bulan", val)}>
-                    <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Bulan" /></SelectTrigger>
+                    <SelectTrigger className="w-full "><SelectValue placeholder="Pilih Bulan" /></SelectTrigger>
                     <SelectContent>
                       {["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"].map((b) => (<SelectItem key={b} value={b}>{getMonthName(b)}</SelectItem>))}
                     </SelectContent>
@@ -318,5 +318,5 @@ export default function CreateAdministrasiPage() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

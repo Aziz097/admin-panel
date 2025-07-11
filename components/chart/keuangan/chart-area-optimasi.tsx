@@ -155,7 +155,7 @@ export function ChartAreaGradient({ tahun }: { tahun: string }) {
         </CardHeader>
         <CardContent className="flex justify-center items-center h-[220px] lg:h-[450px]">
           <span className="text-muted-foreground text-sm text-center">
-            Tidak ada data untuk tahun{" "}
+            Belum ada data untuk tahun{" "}
             <span className="font-semibold text-foreground">{tahun}</span>.
           </span>
         </CardContent>

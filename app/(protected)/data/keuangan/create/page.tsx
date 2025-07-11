@@ -162,7 +162,7 @@ export default function CreateKeuanganPage() {
                 setRows([EMPTY_ROW]);
               }}
             >
-              <SelectTrigger className="w-full lg:w-[200px] cursor-pointer">
+              <SelectTrigger className="w-full lg:w-[200px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold">
                 <SelectValue placeholder="Pilih Tipe" />
               </SelectTrigger>
               <SelectContent>
@@ -285,7 +285,7 @@ export default function CreateKeuanganPage() {
                       />
                     </div>
                     <div className="w-full">
-                      <Label className="mb-1">Optimasi</Label>
+                      <Label className="mb-1">Optimasi (Opsional)</Label>
                       <Input
                         type="text"
                         inputMode="numeric"
@@ -317,7 +317,7 @@ export default function CreateKeuanganPage() {
                 )}
 
                 <div className="w-full">
-                  <Label className="mb-1">Realisasi</Label>
+                  <Label className="mb-1">Realisasi (Opsional)</Label>
                   <Input
                     type="text"
                     inputMode="numeric"

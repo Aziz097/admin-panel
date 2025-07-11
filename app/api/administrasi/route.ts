@@ -67,10 +67,13 @@ const administrasiSchemaMap: Record<AdministrasiType, any> = {
 // --- API Handlers ---
 
 // GET handler: Fetch administration data
+// GET handler: Fetch administration data with optional 'tahun' and 'bulan' parameters
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type') as AdministrasiType;
     const id = searchParams.get('id'); // Added to handle fetching single item for edit page
+    const tahun = searchParams.get('tahun'); // Optional: tahun (year)
+    const bulan = searchParams.get('bulan'); // Optional: bulan (month)
 
     if (!type || !(type in administrasiModelMap)) {
         return NextResponse.json({ error: 'Invalid or missing type' }, { status: 400 });
@@ -80,15 +83,23 @@ export async function GET(req: NextRequest) {
         const model = administrasiModelMap[type];
         let data;
 
+        const filters: any = {};
+
         if (id) {
             // Fetch a single item by ID
             data = await model.findMany({ where: { id: Number(id) } });
             if (!data || data.length === 0) {
-                 return NextResponse.json({ message: "Data not found", error: `No ${type} found with id ${id}` }, { status: 404 });
+                return NextResponse.json({ message: "Data not found", error: `No ${type} found with id ${id}` }, { status: 404 });
             }
         } else {
-            // Fetch multiple items (existing logic)
-            data = await model.findMany();
+            // Apply filters if 'tahun' and 'bulan' are provided
+            if (tahun) filters.tahun = tahun;
+            if (bulan) filters.bulan = bulan;
+
+            // Fetch filtered data
+            data = await model.findMany({
+                where: filters,
+            });
         }
 
         // Return data with 'type' appended to each item
@@ -98,7 +109,6 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
-
 
 // POST handler: Create single or batch administration records
 export async function POST(req: NextRequest) {

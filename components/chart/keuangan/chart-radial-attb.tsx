@@ -131,7 +131,7 @@ export function ChartRadialATTB({ tahun }: { tahun: string }) {
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center h-[220px] lg:h-[300px] gap-2">
           <span className="text-sm text-muted-foreground text-center">
-            Tidak ada data untuk tahun{" "}
+            Belum ada data untuk tahun{" "}
             <span className="font-semibold text-foreground">{tahun}</span>.
           </span>
         </CardContent>

@@ -453,7 +453,7 @@ export function DataTable() {
                 <SelectValue placeholder="Pilih Kategori" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all" className="cursor-pointer">Semua Kategori</SelectItem>
+                <SelectItem value="all" className="cursor-pointer">Semua Uraian</SelectItem>
                 {KATEGORI_OPTIONS.map((k) => (
                   <SelectItem className="cursor-pointer" key={k} value={k}>
                     {k}

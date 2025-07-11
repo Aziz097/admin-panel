@@ -64,7 +64,7 @@ export function RadialChartSertifikatTanah({
                                         fontSize={16}
                                         fill="#222">
                                         <tspan fontWeight="bold">{value}</tspan> / {target}{' '}
-                                        sertifikat selesai
+                                        Sertifikat Selesai
                                     </text>
                                 );
                             }
