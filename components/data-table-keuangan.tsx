@@ -424,7 +424,7 @@ export function DataTable() {
       <div className="flex flex-wrap items-center justify-between gap-4 px-4 lg:px-6">
         <div className="flex gap-2 flex-wrap">
           <Select value={type} onValueChange={(val) => setType(val as KeuanganType)}>
-            <SelectTrigger className="w-[160px] cursor-pointer" size="sm">
+            <SelectTrigger className="w-[160px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent >
@@ -435,7 +435,7 @@ export function DataTable() {
             </SelectContent>
           </Select>
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-[135px] cursor-pointer" size="sm">
+            <SelectTrigger className="w-[135px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm">
               <SelectValue placeholder="Pilih Tahun" />
             </SelectTrigger>
             <SelectContent>
@@ -449,7 +449,7 @@ export function DataTable() {
           </Select>
           {type === "optimasi" && (
             <Select value={selectedKategori} onValueChange={setSelectedKategori}>
-              <SelectTrigger className="w-[230px] cursor-pointer" size="sm">
+              <SelectTrigger className="w-[230px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm">
                 <SelectValue placeholder="Pilih Kategori" />
               </SelectTrigger>
               <SelectContent>
@@ -468,7 +468,7 @@ export function DataTable() {
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="cursor-pointer">
                 <IconLayoutColumns />
-                <span className="hidden lg:inline">Filter Columns</span>
+                <span className="hidden lg:inline">Filter Kolom</span>
                 <IconChevronDown />
               </Button>
             </DropdownMenuTrigger>
@@ -512,7 +512,7 @@ export function DataTable() {
                 </TableRow>
               ))}
             </TableHeader>
-            <TableBody>
+            <TableBody className="bg-white">
               {table.getRowModel().rows.length ? (
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id}>
@@ -535,16 +535,16 @@ export function DataTable() {
         </div>
         <div className="flex items-center justify-between px-4">
           <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} of {table.getFilteredRowModel().rows.length} row(s) selected.
+            {table.getFilteredSelectedRowModel().rows.length} dari {table.getFilteredRowModel().rows.length} baris terpilih.
           </div>
           <div className="flex w-full items-center gap-8 lg:w-fit">
             <div className="hidden items-center gap-2 lg:flex">
-              <Label htmlFor="rows-per-page" className="text-sm font-medium">Rows per page</Label>
+              <Label htmlFor="rows-per-page" className="text-sm font-medium ">Baris per Halaman</Label>
               <Select
                 value={`${table.getState().pagination.pageSize}`}
                 onValueChange={(val) => table.setPageSize(Number(val))}
               >
-                <SelectTrigger size="sm" className="w-20" id="rows-per-page">
+                <SelectTrigger size="sm" className="w-20 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" id="rows-per-page">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent side="top">
@@ -555,7 +555,7 @@ export function DataTable() {
               </Select>
             </div>
             <div className="flex w-fit items-center justify-center text-sm font-medium">
-              Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+              Halaman {table.getState().pagination.pageIndex + 1} dari {table.getPageCount()}
             </div>
             <div className="ml-auto flex items-center gap-2 lg:ml-0">
               <Button variant="outline" className="hidden h-8 w-8 p-0 lg:flex" onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()}><IconChevronsLeft /></Button>

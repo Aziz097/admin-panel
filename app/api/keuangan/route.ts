@@ -115,8 +115,6 @@ export async function GET(req: NextRequest) {
   }
 }
 
-
-
 // POST
 export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url);

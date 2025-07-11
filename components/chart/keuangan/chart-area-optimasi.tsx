@@ -70,7 +70,7 @@ function calculateTotalKategori(dataPerTahun: { [category: string]: DataItem[] }
 
 export function ChartAreaGradient({ tahun }: { tahun: string }) {
   const [dataPerTahun, setDataPerTahun] = useState<{ [category: string]: DataItem[] }>({});
-  const [kategori, setKategori] = useState("Total");
+  const [kategori, setKategori] = useState("Semua Uraian");
   const [loading, setLoading] = useState(true);
   const [isAllZero, setIsAllZero] = useState(false);
 
@@ -102,7 +102,7 @@ export function ChartAreaGradient({ tahun }: { tahun: string }) {
           }, {});
 
           const dataWithTotal = {
-            Total: calculateTotalKategori(groupedData),
+            "Semua Uraian": calculateTotalKategori(groupedData),
             ...groupedData,
           };
           setDataPerTahun(dataWithTotal);
@@ -184,7 +184,7 @@ export function ChartAreaGradient({ tahun }: { tahun: string }) {
             <SelectContent>
               {kategoriList.map((key) => (
                 <SelectItem key={key} value={key}>
-                  {key}
+                  {key === "Semua Uraian" ? "Semua Uraian" : key}
                 </SelectItem>
               ))}
             </SelectContent>

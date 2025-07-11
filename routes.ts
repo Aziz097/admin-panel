@@ -7,7 +7,8 @@ export const publicRoutes = [
   "/",
   "/login",
   "/dashboard",
-  "/dashboard/*"
+  "/dashboard/*",
+  "/api/*"
 ];
 
 export const authRoutes = ["/login"];

@@ -16,7 +16,7 @@ export const signInAction = async (signInValues: SignInValues) => {
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
-          return { error: "Invalid credentials. Please check your email or password." };
+          return { error: "Invalid credentials. Please check your password." };
         default:
           return { error: "Authentication error. Please try again." };
       }

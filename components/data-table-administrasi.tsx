@@ -336,7 +336,7 @@ export function DataTable() {
             <div className="flex flex-wrap items-center justify-between gap-4 px-4 lg:px-6">
                 <div className="flex gap-2 flex-wrap">
                     <Select value={type} onValueChange={(val) => setType(val as AdministrasiType)}>
-                        <SelectTrigger className="w-[180px]" size="sm"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="w-[180px] border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm"><SelectValue /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="komunikasi">Komunikasi</SelectItem>
                             <SelectItem value="sertifikasi">Sertifikasi Tanah</SelectItem>
@@ -346,7 +346,7 @@ export function DataTable() {
                         </SelectContent>
                     </Select>
                     <Select value={selectedYear} onValueChange={setSelectedYear}>
-                        <SelectTrigger className="w-[135px]" size="sm"><SelectValue placeholder="Pilih Tahun" /></SelectTrigger>
+                        <SelectTrigger className="w-[135px] border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm"><SelectValue placeholder="Pilih Tahun" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">Semua Tahun</SelectItem>
                             {years.map((year) => <SelectItem key={year} value={year.toString()}>{year}</SelectItem>)}
@@ -354,7 +354,7 @@ export function DataTable() {
                     </Select>
                     {type === 'komunikasi' && (
                         <Select value={selectedIndikator} onValueChange={setSelectedIndikator}>
-                          <SelectTrigger className="w-[230px]" size="sm"><SelectValue placeholder="Pilih Indikator" /></SelectTrigger>
+                          <SelectTrigger className="w-[230px] border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm"><SelectValue placeholder="Pilih Indikator" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="all">Semua Indikator</SelectItem>
                             {INDIKATOR_KOMUNIKASI_OPTIONS.map((indicator) => <SelectItem key={indicator} value={indicator}>{indicator}</SelectItem>)}
@@ -365,7 +365,7 @@ export function DataTable() {
                 <div className="flex items-center gap-2">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm"><IconLayoutColumns className="h-4 w-4 mr-2"/><span className="hidden lg:inline">Columns</span></Button>
+                            <Button variant="outline" size="sm"><IconLayoutColumns className="h-4 w-4 mr-2"/><span className="hidden lg:inline">Filter Kolom</span></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             {table.getAllColumns().filter((col) => col.getCanHide()).map((col) => (
@@ -394,7 +394,7 @@ export function DataTable() {
                                 </TableRow>
                             ))}
                         </TableHeader>
-                        <TableBody>
+                        <TableBody className='bg-white'>
                             {table.getRowModel().rows.length ? (
                                 table.getRowModel().rows.map((row) => (
                                     <TableRow key={row.id}>
@@ -428,7 +428,7 @@ export function DataTable() {
                             <Select
                                 value={`${table.getState().pagination.pageSize}`}
                                 onValueChange={(val) => table.setPageSize(Number(val))}>
-                                <SelectTrigger size="sm" className="w-20" id="rows-per-page"><SelectValue /></SelectTrigger>
+                                <SelectTrigger size="sm" className="w-20 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" id="rows-per-page"><SelectValue /></SelectTrigger>
                                 <SelectContent side="top">
                                     {[10, 20, 30, 40, 50].map((n) => (<SelectItem key={n} value={`${n}`}>{n}</SelectItem>))}
                                 </SelectContent>

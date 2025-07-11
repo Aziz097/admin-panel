@@ -1,32 +1,32 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Input } from "@/components/ui/input"
+import * as React from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectTrigger,
   SelectValue,
   SelectContent,
   SelectItem,
-} from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Card } from "@/components/ui/card"
-import { AppSidebar } from "@/components/app-sidebar"
-import { SiteHeader } from "@/components/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { toast } from "sonner"
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { toast } from "sonner";
 
-export type KeuanganType = "optimasi" | "aki" | "ao" | "attb"
+export type KeuanganType = "optimasi" | "aki" | "ao" | "attb";
 
 const KATEGORI_OPTIONS = [
   "Perjalanan Dinas Non Diklat",
   "Bahan Makanan & Konsumsi",
   "Alat dan Keperluan Kantor",
   "Barang Cetakan",
-]
+];
 
 const EMPTY_ROW = {
   tahun: new Date().getFullYear().toString(),
@@ -37,7 +37,7 @@ const EMPTY_ROW = {
   optimasi: "",
   target: "",
   realisasi: "",
-}
+};
 
 function formatRupiah(value: string): string {
   const numberString = value.replace(/[^\d,]/g, "").replace(",", ".");
@@ -52,50 +52,94 @@ function parseRupiah(value: string): number {
 }
 
 export default function CreateKeuanganPage() {
-  const router = useRouter()
-  const [type, setType] = useState<KeuanganType>("optimasi")
-  const [rows, setRows] = useState<any[]>([EMPTY_ROW])
+  const router = useRouter();
+  const [type, setType] = useState<KeuanganType>("optimasi");
+  const [rows, setRows] = useState<any[]>([EMPTY_ROW]);
+  const [existingData, setExistingData] = useState<any[]>([]); // Store existing data
 
   // Load type from URL if available
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const typeFromURL = params.get("type") as KeuanganType
-    if (typeFromURL) setType(typeFromURL)
-  }, [])
+    const params = new URLSearchParams(window.location.search);
+    const typeFromURL = params.get("type") as KeuanganType;
+    if (typeFromURL) setType(typeFromURL);
+  }, []);
+
+  // Fetch existing data from backend when component loads
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await fetch(`/api/keuangan?type=${type}`);
+        const data = await res.json();
+        if (res.ok) {
+          setExistingData(data);
+        } else {
+          toast.error("Gagal memuat data.");
+        }
+      } catch (error) {
+        console.error("Error fetching existing data:", error);
+        toast.error("Gagal memuat data.");
+      }
+    };
+
+    fetchData();
+  }, [type]);
 
   const handleChange = (index: number, field: string, value: string) => {
     setRows((prev) =>
       prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
-    )
-  }
+    );
+  };
 
-  const addRow = () => setRows([...rows, EMPTY_ROW])
-  const removeRow = (index: number) => setRows(rows.filter((_, i) => i !== index))
+  const addRow = () => setRows([...rows, EMPTY_ROW]);
+  const removeRow = (index: number) => setRows(rows.filter((_, i) => i !== index));
 
   const handleSubmit = async () => {
     try {
+      for (const row of rows) {
+        // Check for duplicates based on type
+        let isDuplicate = false;
+        if (type === "ao" || type === "attb") {
+          // Check for duplicate based on tahun and semester
+          isDuplicate = existingData.some(
+            (existing) => existing.tahun === row.tahun && existing.semester === row.semester
+          );
+        } else {
+          // Check for duplicate based on tahun and bulan
+          isDuplicate = existingData.some(
+            (existing) => existing.tahun === row.tahun && existing.bulan === row.bulan
+          );
+        }
+
+        if (isDuplicate) {
+          toast.error(
+            `Data untuk ${row.tahun} - ${type === "ao" || type === "attb" ? 'Semester ' + row.semester : row.bulan} sudah ada.`
+          );
+          return; // Prevent submission if duplicate found
+        }
+      }
+
       const sanitizedRows = rows.map((r) => ({
         ...r,
         penetapan: r.penetapan ? parseRupiah(r.penetapan) : undefined,
         optimasi: r.optimasi ? parseRupiah(r.optimasi) : undefined,
         target: r.target ? parseRupiah(r.target) : undefined,
         realisasi: r.realisasi ? parseRupiah(r.realisasi) : undefined,
-      }))
+      }));
 
       const res = await fetch(`/api/keuangan?type=${type}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sanitizedRows),
-      })
+      });
 
-      if (!res.ok) throw new Error("Gagal menambahkan data")
+      if (!res.ok) throw new Error("Gagal menambahkan data");
 
-      toast.success("Data berhasil ditambahkan")
-      router.push(`/data/keuangan?type=${type}`)
+      toast.success("Data berhasil ditambahkan");
+      router.push(`/data/keuangan?type=${type}`);
     } catch (error) {
-      toast.error("Terjadi kesalahan saat menyimpan.")
+      toast.error("Terjadi kesalahan saat menyimpan.");
     }
-  }
+  };
 
   return (
     <SidebarProvider
@@ -114,8 +158,8 @@ export default function CreateKeuanganPage() {
             <Select
               value={type}
               onValueChange={(val) => {
-                setType(val as KeuanganType)
-                setRows([EMPTY_ROW])
+                setType(val as KeuanganType);
+                setRows([EMPTY_ROW]);
               }}
             >
               <SelectTrigger className="w-full lg:w-[200px] cursor-pointer">
@@ -155,10 +199,7 @@ export default function CreateKeuanganPage() {
                         <SelectValue placeholder="Pilih Bulan" />
                       </SelectTrigger>
                       <SelectContent>
-                        {[
-                          "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                          "Juli", "Agustus", "September", "Oktober", "November", "Desember",
-                        ].map((bulan) => (
+                        {[ "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"].map((bulan) => (
                           <SelectItem key={bulan} value={bulan} className="cursor-pointer">
                             {bulan}
                           </SelectItem>
@@ -180,10 +221,7 @@ export default function CreateKeuanganPage() {
                           <SelectValue placeholder="Pilih Bulan" />
                         </SelectTrigger>
                         <SelectContent>
-                          {[
-                            "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-                            "Juli", "Agustus", "September", "Oktober", "November", "Desember",
-                          ].map((bulan) => (
+                          {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"].map((bulan) => (
                             <SelectItem key={bulan} value={bulan} className="cursor-pointer">
                               {bulan}
                             </SelectItem>
@@ -335,5 +373,5 @@ export default function CreateKeuanganPage() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }

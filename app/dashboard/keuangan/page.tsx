@@ -1,7 +1,7 @@
 "use client"
 
 import { AppSidebar } from "@/components/app-sidebar"
-import { DataTable } from "@/components/keuangan-table"
+import { DataTable } from "@/components/data-table-keuangan"
 import { ChartRadialATTB } from "@/components/chart/keuangan/chart-radial-attb"
 import { ChartRadialAO } from "@/components/chart/keuangan/chart-radial-ao"
 import { SectionCards } from "@/components/section-cards"
