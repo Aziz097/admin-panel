@@ -113,8 +113,8 @@ export function KepatuhanChart({ tahun }: { tahun: string }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="font-bold text-2xl text-black">Kepatuhan</CardTitle>
-          <CardDescription className="text-zinc-400">Rekap Indikator Kepatuhan {tahun}</CardDescription>
+          <CardTitle className="font-bold text-xl text-black">Kepatuhan</CardTitle>
+          <CardDescription className="text-md text-zinc-400">Rekap Indikator Kepatuhan {tahun}</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center items-center h-[220px] lg:h-[450px]">
           <span className="text-muted-foreground text-sm text-center">
@@ -130,8 +130,8 @@ export function KepatuhanChart({ tahun }: { tahun: string }) {
     <div className="w-full rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 shadow-sm">
       <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between mb-6">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-black">Kepatuhan</h2>
-          <p className="text-sm text-zinc-400">Rekap Indikator Kepatuhan {tahun}</p>
+          <div className="font-bold text-xl text-black">Kepatuhan</div>
+          <div className="text-md text-zinc-400">Rekap Indikator Kepatuhan - {tahun}</div>
         </div>
         <Select value={bulan} onValueChange={setBulan}>
           <SelectTrigger className="w-full sm:w-[140px] h-9">

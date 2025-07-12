@@ -2,9 +2,9 @@
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
-import { SummaryKomunikasi } from "@/components/chart/administrasi/summary-komunikasi"
-import { TableSertifikasi } from "@/components/chart/administrasi/table-sertifikasi"
-import { SummaryKepatuhan } from "@/components/chart/administrasi/summary-kepatuhan"
+import { KomunikasiCards } from "@/components/chart/administrasi/card-komunikasi"
+import { SertifikasiChart } from "@/components/chart/administrasi/chart-sertifikasi"
+import { KepatuhanChart } from "@/components/chart/administrasi/chart-kepatuhan"
 import { TableChartTJSL } from "@/components/chart/administrasi/card-tjsl"
 import { ChartBarOCR } from "@/components/chart/administrasi/chart-bar-ocr"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
@@ -25,11 +25,11 @@ export default function Page() {
         <SiteHeader tahun={tahun} setTahun={setTahun} />
         <div className="flex flex-1 flex-col">
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-            <h2 className="text-2xl font-semibold">Dashboard Administrasi</h2>
-            <SummaryKomunikasi />
+            <h2 className="text-2xl font-bold">Dashboard Administrasi</h2>
+            <KomunikasiCards tahun={tahun} />
             <ChartBarOCR tahun={tahun} />
-            <TableSertifikasi />
-            <SummaryKepatuhan />
+            <SertifikasiChart tahun={tahun} />
+            <KepatuhanChart tahun={tahun}/>
             <TableChartTJSL tahun={tahun} /> 
           </div>
         </div>

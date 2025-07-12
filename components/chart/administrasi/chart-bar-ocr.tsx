@@ -114,8 +114,8 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
             <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <CardTitle>OCR</CardTitle>
-                        <CardDescription>{semester} - {tahun}</CardDescription>
+                        <CardTitle className="font-bold text-xl">OCR</CardTitle>
+                        <CardDescription className="text-md text-zinc-400">{semester} - {tahun}</CardDescription>
                     </div>
                     <Select value={semester} onValueChange={(val) => setSemester(val as SemesterFilter)}>
                         <SelectTrigger className="w-full sm:w-[180px] mt-2 sm:mt-0">

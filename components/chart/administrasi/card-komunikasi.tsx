@@ -131,8 +131,8 @@ export function KomunikasiCards({ tahun }: { tahun: string }) {
             <div className='flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between mb-6'>
                 {/* Display the month name and year */}
                 <div>
-                    <div className="font-bold text-2xl text-black">Komunikasi</div>
-                    <div className="text-zinc-400">Rekap 6 Indikator {bulanMapping[bulan]} - {tahun}</div>
+                    <div className="font-bold text-xl text-black">Komunikasi</div>
+                    <div className="text-md text-zinc-400">Rekap 6 Indikator {bulanMapping[bulan]} - {tahun}</div>
                 </div>
                 {/* Month Selector Dropdown on the right */}
                 <Select value={bulan} onValueChange={setBulan}>

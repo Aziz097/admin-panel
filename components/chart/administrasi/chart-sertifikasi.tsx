@@ -96,8 +96,8 @@ export function SertifikasiChart({ tahun }: { tahun: string }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="font-bold text-2xl text-black">Sertifikasi Tanah</CardTitle>
-          <CardDescription className="text-zinc-400">Rekap Sertifikat Bulan {bulanMapping[bulan]} {tahun}</CardDescription>
+          <CardTitle className="font-bold text-xl" >Sertifikasi Tanah</CardTitle>
+          <CardDescription className="text-md text-zinc-400">Rekap Sertifikat Bulan {bulanMapping[bulan]} {tahun}</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center items-center h-[220px] lg:h-[450px]">
           {/* Skeleton loader */}
@@ -112,8 +112,8 @@ export function SertifikasiChart({ tahun }: { tahun: string }) {
       <Card>
         <CardHeader className="flex justify-between items-center flex-wrap">
           <div className="w-full sm:w-auto">
-            <CardTitle className="font-bold text-2xl text-black">Sertifikasi Tanah</CardTitle>
-            <CardDescription className="text-zinc-400">
+            <CardTitle className="font-bold text-xl text-black">Sertifikasi Tanah</CardTitle>
+            <CardDescription className="text-md text-zinc-400">
               Rekap Sertifikat Bulan {bulanMapping[bulan]} {tahun}
             </CardDescription>
           </div>
@@ -146,8 +146,8 @@ export function SertifikasiChart({ tahun }: { tahun: string }) {
     <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <div>
-          <div className="font-bold text-2xl text-black">Sertifikasi Tanah</div>
-          <div className="text-zinc-400">Rekap Sertifikat Bulan {bulanMapping[bulan]} {tahun}</div>
+          <div className="font-bold text-xl text-black">Sertifikasi Tanah</div>
+          <div className="text-md text-zinc-400">Rekap Sertifikat Bulan {bulanMapping[bulan]} {tahun}</div>
         </div>
         <Select value={bulan} onValueChange={setBulan}>
           <SelectTrigger className="h-9 cursor-pointer w-full sm:w-[140px]">

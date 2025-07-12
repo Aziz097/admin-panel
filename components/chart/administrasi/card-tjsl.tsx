@@ -99,8 +99,8 @@ export function TableChartTJSL({ tahun }: { tahun: string }) {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Partisipasi TJSL</CardTitle>
-                <CardDescription>{tahun}</CardDescription>
+                <CardTitle className="font-bold text-xl text-black">TJSL</CardTitle>
+                <CardDescription className="text-md text-zinc-400">Rekap Partisipasi - {tahun}</CardDescription>
             </CardHeader>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
                 <TjslTable
