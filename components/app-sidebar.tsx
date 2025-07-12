@@ -48,6 +48,10 @@ const data = {
           title: "Keuangan",
           url: "/data/keuangan",
         },
+        {
+          title: "Pegawai",
+          url: "/data/pegawai",
+        },
       ],
     },
   ],

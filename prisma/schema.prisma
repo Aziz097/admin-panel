@@ -114,9 +114,9 @@ model Sertifikasi {
 model tjsl {
   id        Int     @id @default(autoincrement())
   tahun     String
+  semester  String
   status    Boolean @default(false)
   pegawaiId Int
-  semester  String
   Pegawai   Pegawai @relation(fields: [pegawaiId], references: [id], onDelete: Cascade)
 
   @@unique([pegawaiId, tahun, semester])
@@ -131,12 +131,12 @@ model Pegawai {
 }
 
 model ocr {
-  id          Int    @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   tahun       String
   semester    String
   target      Int
   realisasi   Int?
   kategoriOCR String
 
-  @@unique([tahun, kategoriOCR])
+  @@unique([tahun, semester, kategoriOCR])
 }
