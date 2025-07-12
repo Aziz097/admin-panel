@@ -41,11 +41,11 @@ const bulanMapping: Record<string, string> = {
 const chartConfig: ChartConfig = {
   realisasi: {
     label: "Realisasi",
-    color: "black",
+    color: "rgb(37, 99, 235)",
   },
   sisa: {
     label: "Sisa Target",
-    color: "rgba(0, 0, 0, 0.3)",
+    color: "rgb(186, 230, 253)",
   },
 };
 

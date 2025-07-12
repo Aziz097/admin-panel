@@ -201,13 +201,13 @@ export function ChartBarStacked({ tahun }: { tahun: string }) {
             <Bar
               dataKey="Realisasi"
               stackId="a"
-              fill="black"
+              fill="rgb(37, 99, 235)"
               radius={[4, 4, 0, 0]}
             />
             <Bar
               dataKey="Sisa"
               stackId="a"
-              fill="rgba(0, 0, 0, 0.3)"
+              fill="rgb(186, 230, 253)"
               radius={[4, 4, 0, 0]}
             />
           </BarChart>
@@ -216,11 +216,11 @@ export function ChartBarStacked({ tahun }: { tahun: string }) {
 
       <CardFooter className="justify-center gap-6 pt-4 text-sm text-muted-foreground flex-wrap">
         <div className="flex items-center gap-2">
-          <span className="inline-block w-3 h-3 rounded-sm bg-black" />
+          <span className="inline-block w-3 h-3 rounded-sm bg-sky-600" />
           <span className="leading-none">Realisasi</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="inline-block w-3 h-3 rounded-sm bg-neutral-400" />
+          <span className="inline-block w-3 h-3 rounded-sm bg-sky-200" />
           <span className="leading-none">Target</span>
         </div>
       </CardFooter>

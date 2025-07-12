@@ -492,7 +492,7 @@ export function DataTable() {
                         }
                         router.replace(`/data/administrasi?type=${newType}`);
                     }}>
-                        <SelectTrigger className="w-[150px]" size="sm"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="w-[150px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm"><SelectValue /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="komunikasi">Komunikasi</SelectItem>
                             <SelectItem value="sertifikasi">Sertifikasi Tanah</SelectItem>
@@ -503,7 +503,7 @@ export function DataTable() {
                     </Select>
                     
                     <Select value={selectedYear} onValueChange={setSelectedYear}>
-                        <SelectTrigger className="w-[150px]" size="sm"><SelectValue placeholder="Pilih Tahun" /></SelectTrigger>
+                        <SelectTrigger className="w-[150px]cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm"><SelectValue placeholder="Pilih Tahun" /></SelectTrigger>
                         <SelectContent>
                             {type !== 'tjsl' && <SelectItem value="all">Semua Tahun</SelectItem>}
                             {yearDropdownOptions.map((year) => <SelectItem key={year} value={year}>{year}</SelectItem>)}
@@ -612,7 +612,7 @@ export function DataTable() {
                                 </TableRow>
                             ))}
                         </TableHeader>
-                        <TableBody>
+                        <TableBody className="bg-white">
                             {isLoading ? (
                                 <TableRow><TableCell colSpan={columnsMap[type].length} className="h-24 text-center">Memuat data...</TableCell></TableRow>
                             ) : table.getRowModel().rows.length ? (

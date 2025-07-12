@@ -269,8 +269,8 @@ export function SertifikasiChart({ tahun }: { tahun: string }) {
                 }}
               />
             </PolarRadiusAxis>
-            <RadialBar dataKey="Realisasi" fill="#0a0a0a" stackId="a" cornerRadius={3} />
-            <RadialBar dataKey="Target" fill="#e5e7eb" stackId="a" cornerRadius={3} />
+            <RadialBar dataKey="Realisasi" fill="#0284c7" stackId="a" cornerRadius={3} />
+            <RadialBar dataKey="Target" fill="#bae6fd" stackId="a" cornerRadius={3} />
           </RadialBarChart>
         </div>
       </div>
