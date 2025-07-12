@@ -66,7 +66,6 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 
 export type KeuanganType = "optimasi" | "aki" | "ao" | "attb"
@@ -88,132 +87,6 @@ const KATEGORI_OPTIONS = [
   "Barang Cetakan",
 ]
 
-const selectColumn: ColumnDef<any> = {
-  id: "select",
-  header: ({ table }) => (
-    <div className="flex items-center justify-center">
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    </div>
-  ),
-  cell: ({ row }) => (
-    <div className="flex items-center justify-center">
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    </div>
-  ),
-  enableSorting: false,
-  enableHiding: false,
-}
-
-const actionColumn: ColumnDef<any> = {
-  id: "actions",
-  header: () => null,
-  cell: ({ row, table }) => {
-    const [open, setOpen] = React.useState(false)
-    const router = useRouter()
-
-    const handleDelete = async () => {
-      const selectedRows = table.getFilteredSelectedRowModel().rows
-      let deletePromises: Promise<any>[] = []
-
-      if (selectedRows.length > 0) {
-        selectedRows.forEach((r) => {
-          const { id, type } = r.original
-          if (!id || !type) throw new Error("Missing ID or type")
-          deletePromises.push(fetch(`/api/keuangan?type=${type}&id=${id}`, { method: "DELETE" }))
-        })
-      } else {
-        const { id, type } = row.original
-        if (!id || !type) throw new Error("Missing ID or type")
-        deletePromises.push(fetch(`/api/keuangan?type=${type}&id=${id}`, { method: "DELETE" }))
-      }
-
-      try {
-        const results = await Promise.all(deletePromises)
-        const failed = results.some((res) => !res.ok)
-        if (failed) throw new Error()
-        toast.success("Data berhasil dihapus.")
-        setTimeout(() => {
-          window.location.reload()
-        }, 1000)
-      } catch (err) {
-        toast.error("Gagal menghapus data.")
-      } finally {
-        setOpen(false)
-      }
-    }
-
-    return (
-      <div className="w-full h-full flex items-center justify-end pr-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="cursor-pointer">
-              <IconDotsVertical />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32">
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onSelect={(e) => {
-                e.preventDefault()
-                const { id, type } = row.original
-                if (!id || !type) {
-                  toast.error("ID atau type tidak ditemukan.")
-                  return
-                }
-                router.push(`/data/keuangan/edit/${id}?type=${type}`)
-              }}
-            >
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <DropdownMenuItem
-                  onSelect={(e) => {
-                    e.preventDefault()
-                    setOpen(true)
-                  }}
-                  className="text-red-500 cursor-pointer"
-                >
-                  Hapus
-                </DropdownMenuItem>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Konfirmasi Penghapusan</DialogTitle>
-                </DialogHeader>
-                <p>
-                  {table.getFilteredSelectedRowModel().rows.length > 0
-                    ? `Hapus ${table.getFilteredSelectedRowModel().rows.length} baris terpilih? Tindakan ini tidak bisa dibatalkan.`
-                    : "Hapus baris ini? Tindakan ini tidak bisa dibatalkan."}
-                </p>
-                <DialogFooter className="mt-4">
-                  <Button className="cursor-pointer" variant="outline" onClick={() => setOpen(false)}>Batal</Button>
-                  <Button className="cursor-pointer" variant="destructive" onClick={handleDelete}>Hapus</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    )
-  },
-  enableSorting: false,
-  enableHiding: false,
-}
-
 export function DataTable() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -225,6 +98,30 @@ export function DataTable() {
 
   const [isLoading, setIsLoading] = React.useState(true)
   const [data, setData] = React.useState<any[]>([])
+
+  const fetchKeuanganData = async (selectedType: KeuanganType) => {
+    setIsLoading(true)
+    try {
+      const res = await fetch(`/api/keuangan?type=${selectedType}`)
+      const json = await res.json()
+      setData(json)
+    } catch {
+      toast.error("Gagal memuat data.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  React.useEffect(() => {
+    fetchKeuanganData(type)
+  }, [type])
+
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 })
+  const [selectedYear, setSelectedYear] = React.useState<string>("all")
+  const [selectedKategori, setSelectedKategori] = React.useState<string>("all")
+
   const sorting = React.useMemo<SortingState>(() => {
     if (type === "ao" || type === "attb") {
       return [{ id: "tahun", desc: false }]
@@ -235,33 +132,148 @@ export function DataTable() {
     ]
   }, [type])
 
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 })
-  const [selectedYear, setSelectedYear] = React.useState<string>("all")
-  const [selectedKategori, setSelectedKategori] = React.useState<string>("all")
+  const selectColumn: ColumnDef<any> = {
+    id: "select",
+    header: ({ table }) => (
+      <div className="flex items-center justify-center">
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label="Select all"
+        />
+      </div>
+    ),
+    cell: ({ row }) => (
+      <div className="flex items-center justify-center">
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label="Select row"
+        />
+      </div>
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  }
+
+  const actionColumn: ColumnDef<any> = {
+    id: "actions",
+    header: () => null,
+    cell: ({ row, table }) => {
+      const [open, setOpen] = React.useState(false)
+
+      const handleDelete = async () => {
+        const selectedRows = table.getFilteredSelectedRowModel().rows
+        let deletePromises: Promise<any>[] = []
+
+        if (selectedRows.length > 0) {
+          selectedRows.forEach((r) => {
+            const { id, type } = r.original
+            if (!id || !type) throw new Error("Missing ID or type")
+            deletePromises.push(fetch(`/api/keuangan?type=${type}&id=${id}`, { method: "DELETE" }))
+          })
+        } else {
+          const { id, type } = row.original
+          if (!id || !type) throw new Error("Missing ID or type")
+          deletePromises.push(fetch(`/api/keuangan?type=${type}&id=${id}`, { method: "DELETE" }))
+        }
+
+        try {
+          const results = await Promise.all(deletePromises)
+          const failed = results.some((res) => !res.ok)
+          if (failed) throw new Error()
+          toast.success("Data berhasil dihapus.")
+          await fetchKeuanganData(type)
+          table.resetRowSelection()
+          table.setPageIndex(0)
+        } catch (err) {
+          toast.error("Gagal menghapus data.")
+        } finally {
+          setOpen(false)
+        }
+      }
+
+      return (
+        <div className="w-full h-full flex items-center justify-end pr-2">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="cursor-pointer">
+                <IconDotsVertical />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-32">
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onSelect={(e) => {
+                  e.preventDefault()
+                  const { id, type } = row.original
+                  if (!id || !type) {
+                    toast.error("ID atau type tidak ditemukan.")
+                    return
+                  }
+                  router.push(`/data/keuangan/edit/${id}?type=${type}`)
+                }}
+              >
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <DropdownMenuItem
+                    onSelect={(e) => {
+                      e.preventDefault()
+                      setOpen(true)
+                    }}
+                    className="text-red-500 cursor-pointer"
+                  >
+                    Hapus
+                  </DropdownMenuItem>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Konfirmasi Penghapusan</DialogTitle>
+                  </DialogHeader>
+                  <p>
+                    {table.getFilteredSelectedRowModel().rows.length > 0
+                      ? `Hapus ${table.getFilteredSelectedRowModel().rows.length} baris terpilih? Tindakan ini tidak bisa dibatalkan.`
+                      : "Hapus baris ini? Tindakan ini tidak bisa dibatalkan."}
+                  </p>
+                  <DialogFooter className="mt-4">
+                    <Button variant="outline" onClick={() => setOpen(false)}>Batal</Button>
+                    <Button variant="destructive" onClick={handleDelete}>Hapus</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )
+    },
+    enableSorting: false,
+    enableHiding: false,
+  }
 
   const baseColumns: ColumnDef<any>[] = [
     { accessorKey: "tahun", header: "Tahun" },
     {
-    accessorKey: "bulan",
-    header: "Bulan",
-    sortingFn: (rowA, rowB, columnId) => {
-      const order = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-      ];
+      accessorKey: "bulan",
+      header: "Bulan",
+      sortingFn: (rowA, rowB, columnId) => {
+        const order = [
+          "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+          "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        ]
+        const bulanA = rowA.getValue(columnId) as string
+        const bulanB = rowB.getValue(columnId) as string
+        const tahunA = Number(rowA.original.tahun)
+        const tahunB = Number(rowB.original.tahun)
 
-      const bulanA = rowA.getValue(columnId) as string;
-      const bulanB = rowB.getValue(columnId) as string;
-      const tahunA = Number(rowA.original.tahun);
-      const tahunB = Number(rowB.original.tahun);
-
-      if (tahunA !== tahunB) {
-        return tahunB - tahunA;
-      }
-
-      return order.indexOf(bulanA) - order.indexOf(bulanB);
+        if (tahunA !== tahunB) return tahunB - tahunA
+        return order.indexOf(bulanA) - order.indexOf(bulanB)
       }
     },
     { accessorKey: "semester", header: "Semester" },
@@ -275,16 +287,18 @@ export function DataTable() {
           </Badge>
         ),
     },
-    { accessorKey: "target", header: () => <div className="text-left">Target</div>, cell: ({ row }) => <div className="text-left">{formatIDR(row.original.target)}</div> },
-    { accessorKey: "penetapan", header: () => <div className="text-left">Penetapan</div>, cell: ({ row }) => <div className="text-left">{formatIDR(row.original.penetapan)}</div> },
-    { accessorKey: "optimasi", header: () => <div className="text-left">Optimasi</div>, cell: ({ row }) => <div className="text-left">{formatIDR(row.original.optimasi)}</div> },
-    { accessorKey: "realisasi", header: () => <div className="text-left">Realisasi</div>, cell: ({ row }) => <div className="text-left">{formatIDR(row.original.realisasi)}</div> },
+    { accessorKey: "target", header: "Target", cell: ({ row }) => <div className="text-left">{formatIDR(row.original.target)}</div> },
+    { accessorKey: "penetapan", header: "Penetapan", cell: ({ row }) => <div className="text-left">{formatIDR(row.original.penetapan)}</div> },
+    { accessorKey: "optimasi", header: "Optimasi", cell: ({ row }) => <div className="text-left">{formatIDR(row.original.optimasi)}</div> },
+    { accessorKey: "realisasi", header: "Realisasi", cell: ({ row }) => <div className="text-left">{formatIDR(row.original.realisasi)}</div> },
     {
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => (
         <Badge variant="outline" className="text-muted-foreground px-1.5 flex items-center gap-1">
-          {row.original.status === "Done" ? <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 size-4" /> : <IconLoader className="size-4 animate-spin" />}
+          {row.original.status === "Done"
+            ? <IconCircleCheckFilled className="fill-green-500 dark:fill-green-400 size-4" />
+            : <IconLoader className="size-4 animate-spin" />}
           {row.original.status}
         </Badge>
       ),
@@ -292,30 +306,12 @@ export function DataTable() {
   ]
 
   const filteredCols = (keys: string[]) => baseColumns.filter(c => keys.includes((c as any).accessorKey))
-
   const columnsMap: Record<KeuanganType, ColumnDef<any>[]> = {
     optimasi: [selectColumn, ...filteredCols(['tahun', 'bulan', 'kategori', 'penetapan', 'optimasi', 'realisasi']), actionColumn],
     aki: [selectColumn, ...filteredCols(['tahun', 'bulan', 'target', 'realisasi']), actionColumn],
     ao: [selectColumn, ...filteredCols(['tahun', 'semester', 'target', 'realisasi']), actionColumn],
     attb: [selectColumn, ...filteredCols(['tahun', 'semester', 'target', 'realisasi']), actionColumn],
   }
-
-  React.useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true)
-      try {
-        const res = await fetch(`/api/keuangan?type=${type}`)
-        const json = await res.json()
-        setData(json)
-      } catch {
-        toast.error("Gagal memuat data.")
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    fetchData()
-  }, [type])
-
 
   const years = React.useMemo(() => {
     const allYears = data.map((item) => item.tahun).filter(Boolean)
