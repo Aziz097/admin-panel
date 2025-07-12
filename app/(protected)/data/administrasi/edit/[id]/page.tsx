@@ -195,22 +195,34 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
     }
   }
 
-  // **DIUBAH**: Menggunakan komponen Skeleton saat loading
-  if (isLoading || !form || !type) {
+  if (isLoading) {
     return (
       <SidebarProvider>
         <AppSidebar variant="inset" />
         <SidebarInset>
           <SiteHeader />
-            <div className="max-w-[90rem] md:mx-auto px-4 py-6 md:px-6 space-y-6">
-              <Skeleton className="h-8 w-1/3" />
-              <EditFormSkeleton />
-            </div>
+          <div className="max-w-[100rem] md:mx-auto px-4 py-6 space-y-6 md:px-6">
+            <h1 className="text-2xl font-semibold">Edit Data Administrasi</h1>
+            <EditFormSkeleton />
+          </div>
         </SidebarInset>
       </SidebarProvider>
     )
   }
-
+  if (!form || !type) {
+    return (
+      <SidebarProvider>
+        <AppSidebar variant="inset" />
+        <SidebarInset>
+          <SiteHeader />
+          <div className="max-w-[90rem] md:mx-auto px-4 py-6 space-y-6 md:px-6">
+            <h1 className="text-2xl font-semibold">Edit Data Administrasi</h1>
+            <p className="text-red-500">Data tidak ditemukan atau tidak valid.</p>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    )
+  }
   return (
     <SidebarProvider>
       <AppSidebar variant="inset" />
@@ -250,8 +262,6 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
                     </div>
                 )}
 
-
-                {/* Dynamic Fields */}
                 {type === 'komunikasi' && (
                     <>
                         <div className="md:col-span-2">

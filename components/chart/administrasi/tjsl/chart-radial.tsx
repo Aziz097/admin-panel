@@ -124,7 +124,7 @@ export function ChartRadialTjsl({ loading, chartData, tahun, semester, setSemest
                             dataKey="realisasi"
                             stackId="a"
                             cornerRadius={6}
-                            fill="black"
+                            fill="rgb(37, 99, 235)"
                             className="stroke-transparent stroke-2"
                         />
                         {/* Bar untuk Sisa Target (abu-abu) */}
@@ -132,7 +132,7 @@ export function ChartRadialTjsl({ loading, chartData, tahun, semester, setSemest
                             dataKey="sisa"
                             stackId="a"
                             cornerRadius={6}
-                            fill="rgba(0, 0, 0, 0.3)"
+                            fill="rgb(186, 230, 253)"
                             className="stroke-transparent stroke-2"
                         />
                         
@@ -158,14 +158,14 @@ export function ChartRadialTjsl({ loading, chartData, tahun, semester, setSemest
             <div className="flex-col gap-2 text-sm mt-4">
                 <div className="flex items-center justify-between w-full border-t pt-2">
                     <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-black"/>
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-sky-600"/>
                         <div className="text-muted-foreground">Realisasi</div>
                     </div>
                     <div className="font-medium">{chartData.realisasi} Partisipasi</div>
                 </div>
                 <div className="flex items-center justify-between w-full border-t pt-2 mt-2">
                     <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-gray-300" />
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-sky-200" />
                         <div className="text-muted-foreground">Target</div>
                     </div>
                     <div className="font-medium">{chartData.target} Partisipasi</div>

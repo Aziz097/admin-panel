@@ -21,15 +21,17 @@ type OcrApiData = {
 type ChartDataPoint = {
     kategoriOCR: string
     Target: number
-    Realisasi: number
+    OriginalRealisasi: number
+    RealisasiPartial: number
+    RealisasiComplete: number
     Sisa?: number
 }
 
 const KATEGORI_OCR_OPTIONS = ["KC", "COP", "KP", "Inovasi"];
 
 const chartConfig: ChartConfig = {
-    Realisasi: { label: "Realisasi", color: "var(--chart-2)" },
-    Sisa: { label: "Sisa Target", color: "var(--chart-1)" },
+    Realisasi: { label: "Realisasi", color: "#0ea5e9" },
+    Sisa: { label: "Sisa Target", color: "#bae6fd" },
 }
 
 // --- Main Card Component ---
@@ -62,36 +64,33 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
     // --- Data Processing for Chart ---
     const chartData = React.useMemo(() => {
         let dataForSemester = allDataForYear;
-        // Filter data berdasarkan semester jika bukan 'Akumulasi'
         if (semester !== "Akumulasi") {
             const semesterNumber = semester === "Semester 1" ? "1" : "2";
             dataForSemester = allDataForYear.filter(item => item.semester === semesterNumber);
         }
 
-        // Buat struktur default dan agregasi data, mirip kode referensi
-        const defaultStructure = KATEGORI_OCR_OPTIONS.map(kategori => ({
-            kategoriOCR: kategori,
-            Target: 0,
-            Realisasi: 0,
-        }));
-
-        const aggregated = defaultStructure.map(item => {
-            const itemsForKategori = dataForSemester.filter(d => d.kategoriOCR === item.kategoriOCR);
-            const totalTarget = itemsForKategori.reduce((sum, current) => sum + current.target, 0);
-            const totalRealisasi = itemsForKategori.reduce((sum, current) => sum + (current.realisasi || 0), 0);
+        const aggregated = KATEGORI_OCR_OPTIONS.map(kategori => {
+            const itemsForKategori = dataForSemester.filter(item => item.kategoriOCR === kategori);
+            const totalTarget = itemsForKategori.reduce((sum, item) => sum + item.target, 0);
+            const totalRealisasi = itemsForKategori.reduce((sum, item) => sum + (item.realisasi || 0), 0);
+            
+            // **DIUBAH**: Logika untuk memecah realisasi berdasarkan status capaian
+            const isComplete = totalTarget > 0 && totalRealisasi >= totalTarget;
 
             return {
-                ...item,
+                kategoriOCR: kategori,
                 Target: totalTarget,
-                Realisasi: totalRealisasi,
-                Sisa: Math.max(0, totalTarget - totalRealisasi),
+                OriginalRealisasi: totalRealisasi,
+                RealisasiPartial: isComplete ? 0 : totalRealisasi,
+                RealisasiComplete: isComplete ? totalTarget : 0, // Jika komplit, bar ini yang diisi
+                Sisa: isComplete ? 0 : Math.max(0, totalTarget - totalRealisasi),
             };
         });
         
         return aggregated;
     }, [allDataForYear, semester])
 
-    const isDataEmpty = chartData.every(d => d.Target === 0 && d.Realisasi === 0);
+    const isDataEmpty = chartData.every(d => d.Target === 0 && d.OriginalRealisasi === 0);
 
     // --- Skeleton UI ---
     if (loading) {
@@ -115,8 +114,8 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
             <CardHeader>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <CardTitle>Optimalisasi Citra Perusahaan (OCR)</CardTitle>
-                        <CardDescription>Capaian OCR per Kategori - {semester} {tahun}</CardDescription>
+                        <CardTitle>OCR</CardTitle>
+                        <CardDescription>{semester} - {tahun}</CardDescription>
                     </div>
                     <Select value={semester} onValueChange={(val) => setSemester(val as SemesterFilter)}>
                         <SelectTrigger className="w-full sm:w-[180px] mt-2 sm:mt-0">
@@ -131,7 +130,7 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="h-[400px] w-[400]">
+                <div className="h-[400px] w-[full]">
                     {isDataEmpty ? (
                         <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                             Tidak ada data untuk periode ini.
@@ -153,25 +152,26 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
                                     tickLine={false}
                                     axisLine={false}
                                 />
-                                <Tooltip
+                                                                <Tooltip
                                     cursor={false}
                                     content={({ payload, label }) => {
                                         const current = chartData.find(d => d.kategoriOCR === label);
                                         if (!current) return null;
 
-                                        const percentage = current.Target > 0 ? (current.Realisasi / current.Target) * 100 : 0;
+                                        const percentage = current.Target > 0 ? (current.OriginalRealisasi / current.Target) * 100 : 0;
 
                                         return (
                                             <div className="rounded-lg border bg-background p-2 shadow-sm min-w-[200px]">
                                                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                                                     <div className="flex items-center gap-2">
-                                                        <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: 'var(--color-Realisasi)' }} />
+                                                        <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: '#0ea5e9' }} />
                                                         <p className="text-muted-foreground">Realisasi</p>
                                                     </div>
-                                                    <p className="font-medium text-right">{current.Realisasi}</p>
+                                                    {/* **DIUBAH**: Menggunakan OriginalRealisasi untuk tooltip */}
+                                                    <p className="font-medium text-right">{current.OriginalRealisasi}</p>
                                                     
                                                     <div className="flex items-center gap-2">
-                                                        <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: 'var(--color-Sisa)' }} />
+                                                        <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: '#bae6fd' }} />
                                                         <p className="text-muted-foreground">Target</p>
                                                     </div>
                                                     <p className="font-medium text-right">{current.Target}</p>
@@ -187,14 +187,25 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
                                         );
                                     }}
                                 />
-                                <Legend wrapperStyle={{ fontSize: "14px", paddingTop: "20px" }} />
-                                <Bar dataKey="Realisasi" stackId="a" fill="#000000" radius={[0, 0, 0, 0]} />
-                                <Bar dataKey="Sisa" stackId="a" fill="#dedede" radius={[10, 10, 0, 0]} />
+                                <Bar dataKey="RealisasiPartial" name="Realisasi" stackId="a" fill="#0ea5e9" barSize={80} />
+                                <Bar dataKey="RealisasiComplete" name="Realisasi" stackId="a" fill="#0ea5e9" radius={[10, 10, 0, 0]} barSize={80} />
+                                <Bar dataKey="Sisa" name="Sisa" stackId="a" fill="#bae6fd" radius={[10, 10, 0, 0]} barSize={80} />
                             </BarChart>
+
                         </ResponsiveContainer>
                     )}
                 </div>
             </CardContent>
+            <CardFooter className="justify-center gap-6 pt-4 text-sm text-muted-foreground flex-wrap">
+                <div className="flex items-center gap-2">
+                    <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: '#0ea5e9' }} />
+                    <span className="leading-none">Realisasi</span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: '#bae6fd' }} />
+                    <span className="leading-none">Sisa Target</span>
+                </div>
+            </CardFooter>
         </Card>
     );
 }
