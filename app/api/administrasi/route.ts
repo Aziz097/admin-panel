@@ -67,45 +67,56 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-
         if (type === 'tjsl') {
             const tahun = searchParams.get('tahun');
             const semester = searchParams.get('semester');
-            const includePegawai = { Pegawai: { select: { nama: true, nip: true, jabatan: true } } };
+            const bulan = searchParams.get('bulan');
+            const includePegawai = {
+                Pegawai: {
+                    select: { nama: true, nip: true, jabatan: true },
+                },
+            };
 
-            if (tahun && semester) {
-                const data = await prisma.tjsl.findMany({ where: { tahun: tahun, semester: semester }, include: includePegawai });
+            const whereClause: any = {};
+            if (tahun) whereClause.tahun = tahun;
+            if (semester) whereClause.semester = semester;
+            if (bulan) whereClause.bulan = bulan;
+
+            if (tahun || semester || bulan) {
+                const data = await prisma.tjsl.findMany({
+                    where: whereClause,
+                    include: includePegawai,
+                });
                 return NextResponse.json(data);
-            } 
-
-            else if (tahun) {
-                const data = await prisma.tjsl.findMany({ where: { tahun: tahun }, include: includePegawai });
-                return NextResponse.json(data);
-            } 
-
-            else {
-                const allTjslData = await prisma.tjsl.findMany({ select: { tahun: true }, distinct: ['tahun'] });
+            } else {
+                const allTjslData = await prisma.tjsl.findMany({
+                    select: { tahun: true },
+                    distinct: ['tahun'],
+                });
                 return NextResponse.json(allTjslData);
             }
         }
-        
+
+        // Fallback for non-tjsl types
         const model = administrasiModelMap[type as Exclude<AdministrasiType, 'tjsl'>];
         if (!model) {
-             return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
+            return NextResponse.json({ error: 'Invalid type' }, { status: 400 });
         }
 
         if (id) {
             const data = await model.findUnique({ where: { id: Number(id) } });
-            if (!data) { return NextResponse.json({ message: "Data not found" }, { status: 404 }); }
-
+            if (!data) {
+                return NextResponse.json({ message: "Data not found" }, { status: 404 });
+            }
             return NextResponse.json(data);
         } else {
             const tahun = searchParams.get('tahun');
+            const bulan = searchParams.get('bulan');
             const whereClause: any = {};
 
-            if (tahun) {
-                whereClause.tahun = tahun;
-            }
+            if (tahun) whereClause.tahun = tahun;
+            if (bulan) whereClause.bulan = bulan;
+
             const data = await model.findMany({ where: whereClause });
             return NextResponse.json(data);
         }

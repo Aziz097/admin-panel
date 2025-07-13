@@ -287,7 +287,7 @@ export function PegawaiDataTable() {
           onChange={(event) =>
             table.getColumn("nama")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="max-w-sm bg-white"
         />
         <div className="flex items-center gap-2">
           {table.getFilteredSelectedRowModel().rows.length > 0 && (
@@ -333,7 +333,7 @@ export function PegawaiDataTable() {
       {/* Table */}
       <div className="rounded-md border">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-muted">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
@@ -349,7 +349,7 @@ export function PegawaiDataTable() {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
+          <TableBody className="bg-white">
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
