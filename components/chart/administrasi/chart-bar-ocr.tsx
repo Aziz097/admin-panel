@@ -146,13 +146,7 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
                                     tickLine={false}
                                     axisLine={false}
                                 />
-                                <YAxis
-                                    stroke="#888888"
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                />
-                                                                <Tooltip
+                                <Tooltip
                                     cursor={false}
                                     content={({ payload, label }) => {
                                         const current = chartData.find(d => d.kategoriOCR === label);
@@ -164,17 +158,16 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
                                             <div className="rounded-lg border bg-background p-2 shadow-sm min-w-[200px]">
                                                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                                                     <div className="flex items-center gap-2">
-                                                        <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: '#0ea5e9' }} />
-                                                        <p className="text-muted-foreground">Realisasi</p>
-                                                    </div>
-                                                    {/* **DIUBAH**: Menggunakan OriginalRealisasi untuk tooltip */}
-                                                    <p className="font-medium text-right">{current.OriginalRealisasi}</p>
-                                                    
-                                                    <div className="flex items-center gap-2">
                                                         <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: '#bae6fd' }} />
                                                         <p className="text-muted-foreground">Target</p>
                                                     </div>
                                                     <p className="font-medium text-right">{current.Target}</p>
+
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: '#0ea5e9' }} />
+                                                        <p className="text-muted-foreground">Realisasi</p>
+                                                    </div>
+                                                    <p className="font-medium text-right">{current.OriginalRealisasi}</p>
                                                     
                                                     <div className="col-span-2 border-t mt-1 pt-1">
                                                         <div className="flex items-center justify-between">

@@ -1,6 +1,8 @@
 "use client"
 
 import * as React from "react"
+import { useState } from "react"
+import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -54,6 +56,8 @@ const StatusBadge = ({ status }: { status: boolean | null }) => {
 
 // --- Komponen Tabel Utama ---
 export function TjslTable({ loading, tableData }: TjslTableProps) {
+
+    const [searchTerm, setSearchTerm] = useState("");
     // Skeleton UI saat loading
     if (loading) {
         return (
@@ -66,9 +70,21 @@ export function TjslTable({ loading, tableData }: TjslTableProps) {
         )
     }
 
+    const filteredData = tableData.filter(pegawai =>
+        pegawai.nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        pegawai.nip.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div className="lg:col-span-2">
             <h3 className="font-semibold mb-4">Daftar Partisipasi Pegawai</h3>
+            <Input
+                type="text"
+                placeholder="Cari nama atau NIP pegawai..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="mb-4"
+            />
             <div className="border rounded-md max-h-[400px] overflow-y-auto">
                 <Table>
                     <TableHeader className="sticky top-0 bg-muted z-10">
@@ -80,7 +96,7 @@ export function TjslTable({ loading, tableData }: TjslTableProps) {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {tableData.length > 0 ? tableData.map((pegawai) => (
+                        {filteredData.length > 0 ? filteredData.map((pegawai) => (
                             <TableRow key={pegawai.nip}>
                                 <TableCell className="font-medium">{pegawai.nama}</TableCell>
                                 <TableCell>{pegawai.nip}</TableCell>
@@ -94,7 +110,7 @@ export function TjslTable({ loading, tableData }: TjslTableProps) {
                         )) : (
                             <TableRow>
                                 <TableCell colSpan={4} className="h-24 text-center">
-                                    Tidak ada data untuk ditampilkan.
+                                {tableData.length === 0 ? "Tidak ada data untuk ditampilkan." : "Pegawai tidak ditemukan."}
                                 </TableCell>
                             </TableRow>
                         )}

@@ -201,14 +201,14 @@ export function ChartBarStacked({ tahun }: { tahun: string }) {
             <Bar
               dataKey="Realisasi"
               stackId="a"
-              fill="black"
-              radius={[4, 4, 0, 0]}
+              fill="rgb(14, 165, 233)"
+              radius={[8, 8, 0, 0]}
             />
             <Bar
               dataKey="Sisa"
               stackId="a"
-              fill="rgba(0, 0, 0, 0.3)"
-              radius={[4, 4, 0, 0]}
+              fill="rgb(186, 230, 253)"
+              radius={[8, 8, 0, 0]}
             />
           </BarChart>
         </ChartContainer>

@@ -124,7 +124,7 @@ export function ChartRadialTjsl({ loading, chartData, tahun, semester, setSemest
                             dataKey="realisasi"
                             stackId="a"
                             cornerRadius={6}
-                            fill="rgb(37, 99, 235)"
+                            fill="rgb(14, 165, 233)"
                             className="stroke-transparent stroke-2"
                         />
                         {/* Bar untuk Sisa Target (abu-abu) */}
@@ -158,7 +158,7 @@ export function ChartRadialTjsl({ loading, chartData, tahun, semester, setSemest
             <div className="flex-col gap-2 text-sm mt-4">
                 <div className="flex items-center justify-between w-full border-t pt-2">
                     <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-sky-600"/>
+                        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-sky-500"/>
                         <div className="text-muted-foreground">Realisasi</div>
                     </div>
                     <div className="font-medium">{chartData.realisasi} Partisipasi</div>

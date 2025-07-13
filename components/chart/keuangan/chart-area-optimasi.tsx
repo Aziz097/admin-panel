@@ -23,9 +23,9 @@ type DataItem = {
 };
 
 const chartConfig: ChartConfig = {
-  Penetapan: { label: "Penetapan", color: "var(--chart-1)" },
-  Optimasi: { label: "Optimasi", color: "var(--chart-2)" },
-  Realisasi: { label: "Realisasi", color: "var(--chart-3)" },
+  Penetapan: { label: "Penetapan", color: "var(--color-red-500)" },
+  Optimasi: { label: "Optimasi", color: "var(--color-emerald-500)" },
+  Realisasi: { label: "Realisasi", color: "var(--color-sky-500)" },
 };
 
 // Define month order for sorting
@@ -169,7 +169,7 @@ export function ChartAreaGradient({ tahun }: { tahun: string }) {
 
   return (
     <Card>
-      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 ">
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <CardTitle>Optimasi 5.4</CardTitle>
           <CardDescription>
@@ -233,14 +233,14 @@ export function ChartAreaGradient({ tahun }: { tahun: string }) {
             <defs>
               {(["Penetapan", "Optimasi", "Realisasi"] as const).map((key) => (
                 <linearGradient key={key} id={`fill-${key}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={chartConfig[key].color} stopOpacity={0.8} />
-                  <stop offset="95%" stopColor={chartConfig[key].color} stopOpacity={0.1} />
+                  <stop offset="10%" stopColor={chartConfig[key].color} stopOpacity={0.6} />
+                  <stop offset="90%" stopColor={chartConfig[key].color} stopOpacity={0.1} />
                 </linearGradient>
               ))}
             </defs>
-            <Area dataKey="Realisasi" type="natural" fill="url(#fill-Realisasi)" stroke={chartConfig.Realisasi.color} />
-            <Area dataKey="Optimasi" type="natural" fill="url(#fill-Optimasi)" stroke={chartConfig.Optimasi.color} />
-            <Area dataKey="Penetapan" type="natural" fill="url(#fill-Penetapan)" stroke={chartConfig.Penetapan.color} />
+            <Area dataKey="Realisasi" type="natural" fill="url(#fill-Realisasi)" fillOpacity={0.8} stroke={chartConfig.Realisasi.color} strokeWidth={2.5} />
+            <Area dataKey="Optimasi" type="natural" fill="url(#fill-Optimasi)" fillOpacity={0.4} stroke={chartConfig.Optimasi.color} strokeWidth={2.5}/>
+            <Area dataKey="Penetapan" type="natural" fill="url(#fill-Penetapan)" fillOpacity={0.2} stroke={chartConfig.Penetapan.color} strokeWidth={2.5}/>
           </AreaChart>
         </ChartContainer>
       </CardContent>
