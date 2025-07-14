@@ -74,8 +74,14 @@ export function ChartBarStacked({ tahun }: { tahun: string }) {
           Realisasi: 0,
         }))
 
+        type ApiBulanData = {
+          bulan: string
+          target: number
+          realisasi?: number
+        }
+
         const merged = defaultStructure.map((item) => {
-          const found = json.find((d: any) => d.bulan === item.month)
+          const found = (json as ApiBulanData[]).find((d: ApiBulanData) => d.bulan === item.month)
           return found
             ? {
                 month: found.bulan,

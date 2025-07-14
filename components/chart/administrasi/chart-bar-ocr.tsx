@@ -1,9 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Legend, Tooltip, ResponsiveContainer } from "recharts"
+import { Bar, BarChart, CartesianGrid, XAxis,  Tooltip, ResponsiveContainer } from "recharts"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChartConfig, ChartContainer } from "@/components/ui/chart"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
@@ -17,36 +16,6 @@ type OcrApiData = {
     kategoriOCR: string
     target: number
     realisasi: number | null
-}
-type ChartDataPoint = {
-    kategoriOCR: string
-    Target: number
-    OriginalRealisasi: number
-    RealisasiPartial: number
-    RealisasiComplete: number
-    Sisa?: number
-}
-
-const bulanMapping: Record<string, string> = {
-    "01": "Januari",
-    "02": "Februari",
-    "03": "Maret",
-    "04": "April",
-    "05": "Mei",
-    "06": "Juni",
-    "07": "Juli",
-    "08": "Agustus",
-    "09": "September",
-    "10": "Oktober",
-    "11": "November",
-    "12": "Desember",
-  };
-
-const KATEGORI_OCR_OPTIONS = ["KC", "COP", "KP", "Inovasi"];
-
-const chartConfig: ChartConfig = {
-    Realisasi: { label: "Realisasi", color: "#0ea5e9" },
-    Sisa: { label: "Sisa Target", color: "#bae6fd" },
 }
 
 // --- Main Card Component ---
@@ -84,7 +53,7 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
             dataForSemester = allDataForYear.filter(item => item.semester === semesterNumber);
         }
 
-        const aggregated = KATEGORI_OCR_OPTIONS.map(kategori => {
+        const aggregated = ["KC", "COP", "KP", "Inovasi"].map(kategori => {
             const itemsForKategori = dataForSemester.filter(item => item.kategoriOCR === kategori);
             const totalTarget = itemsForKategori.reduce((sum, item) => sum + item.target, 0);
             const totalRealisasi = itemsForKategori.reduce((sum, item) => sum + (item.realisasi || 0), 0);
@@ -164,7 +133,7 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
                                 />
                                 <Tooltip
                                     cursor={false}
-                                    content={({ payload, label }) => {
+                                    content={({ label }) => {
                                         const current = chartData.find(d => d.kategoriOCR === label);
                                         if (!current) return null;
 

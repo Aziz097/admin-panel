@@ -4,7 +4,7 @@
 import * as React from "react"
 import { useState, useEffect, useMemo } from "react"
 import { Label, PolarAngleAxis, PolarRadiusAxis, RadialBar, RadialBarChart } from "recharts"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartConfig, ChartContainer } from "@/components/ui/chart"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
@@ -160,7 +160,7 @@ function TjslTable({ loading, tableData }: TjslTableProps) {
 }
 
 
-export function ChartRadialTjsl({ loading, chartData, tahun, semester, setSemester }: ChartRadialTjslProps) {
+export function ChartRadialTjsl({ loading, chartData, semester, setSemester }: ChartRadialTjslProps) {
     
     // Skeleton UI saat data sedang dimuat
     if (loading) {

@@ -16,7 +16,6 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
-import { cn } from "@/lib/utils"
 import { Icon } from "@tabler/icons-react"
 import { useRouter } from 'next/navigation';
 

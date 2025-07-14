@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import {
   Card,
@@ -87,19 +87,25 @@ export function ChartAreaGradient({ tahun }: { tahun: string }) {
 
         if (res.ok) {
           // Group data by category
-          const groupedData = result.reduce((acc: { [key: string]: DataItem[] }, item: any) => {
-            const category = item.kategori;
-            if (!acc[category]) {
-              acc[category] = [];
-            }
-            acc[category].push({
-              month: item.bulan,
-              Penetapan: item.penetapan,
-              Optimasi: item.optimasi,
-              Realisasi: item.realisasi,
-            });
-            return acc;
-          }, {});
+          const groupedData = result.reduce(
+            (
+              acc: { [key: string]: DataItem[] },
+              item: { kategori: string; bulan: string; penetapan: number; optimasi: number; realisasi: number }
+            ) => {
+              const category = item.kategori;
+              if (!acc[category]) {
+                acc[category] = [];
+              }
+              acc[category].push({
+                month: item.bulan,
+                Penetapan: item.penetapan,
+                Optimasi: item.optimasi,
+                Realisasi: item.realisasi,
+              });
+              return acc;
+            },
+            {}
+          );
 
           const dataWithTotal = {
             "Semua Uraian": calculateTotalKategori(groupedData),

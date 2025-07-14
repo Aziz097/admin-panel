@@ -1,5 +1,4 @@
 "use client"
-
 import * as React from "react"
 import {
   ColumnDef,
@@ -32,7 +31,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -45,7 +43,6 @@ import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
-  IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
   IconChevronsLeft,
@@ -70,61 +67,17 @@ export type Pegawai = {
   jabatan: string
 }
 
-const actionColumn = (
-  refetchData: () => void,
-  openDeleteDialog: (rows: Pegawai[]) => void
-): ColumnDef<Pegawai> => ({
-  id: "actions",
-  header: () => <div className="text-right me-4">Aksi</div>,
-  cell: ({ row }) => {
-    const router = useRouter()
-    const pegawai = row.original
-
-    return (
-      <div className="w-full h-full flex items-center justify-end">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="cursor-pointer">
-              <IconDotsVertical />
-              <span className="sr-only">Open menu</span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-32">
-            <DropdownMenuItem
-              className="cursor-pointer"
-              onSelect={() => router.push(`/data/pegawai/edit/${pegawai.id}`)}
-            >
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="text-red-500 cursor-pointer"
-              onSelect={() => openDeleteDialog([pegawai])}
-            >
-              Hapus
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    )
-  },
-  enableSorting: false,
-  enableHiding: false,
-})
-
 // Main DataTable Component for Pegawai
 export function PegawaiDataTable() {
   const router = useRouter()
   const [data, setData] = React.useState<Pegawai[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
-
   // Table state management
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
   const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize: 10 })
-
   // State for delete confirmation dialog
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = React.useState(false)
   const [rowsToDelete, setRowsToDelete] = React.useState<Pegawai[]>([])
@@ -149,31 +102,27 @@ export function PegawaiDataTable() {
     fetchData()
   }, [fetchData])
 
-  // Function to open the delete confirmation dialog
-  const openDeleteDialog = (rows: Pegawai[]) => {
+  // Function to open the delete confirmation dialog - wrapped in useCallback
+  const openDeleteDialog = React.useCallback((rows: Pegawai[]) => {
     setRowsToDelete(rows)
     setIsDeleteDialogOpen(true)
-  }
+  }, [])
 
   // Function to handle the deletion of one or more employees
   const handleDelete = async () => {
     if (rowsToDelete.length === 0) return
-
     const deletePromises = rowsToDelete.map((pegawai) =>
       fetch(`/api/pegawai?id=${pegawai.id}`, { method: "DELETE" })
     )
-
     try {
       const results = await Promise.all(deletePromises)
       const failed = results.some((res) => !res.ok)
-
       if (failed) {
         throw new Error("Some deletions failed")
       }
-
       toast.success(`${rowsToDelete.length} data pegawai berhasil dihapus.`)
       fetchData() // Refetch data to update the table
-    } catch (err) {
+    } catch {
       toast.error("Gagal menghapus data.")
     } finally {
       setIsDeleteDialogOpen(false)
@@ -181,6 +130,47 @@ export function PegawaiDataTable() {
       setRowSelection({}) // Clear selection after deletion
     }
   }
+
+  // Action column function - wrapped in useCallback
+  const actionColumn = React.useCallback((
+    refetchData: () => void,
+    openDeleteDialog: (rows: Pegawai[]) => void
+  ): ColumnDef<Pegawai> => ({
+    id: "actions",
+    header: () => <div className="text-right me-4">Aksi</div>,
+    cell: ({ row }) => {
+      const pegawai = row.original
+      return (
+        <div className="w-full h-full flex items-center justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="cursor-pointer">
+                <IconDotsVertical />
+                <span className="sr-only">Open menu</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-32">
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onSelect={() => router.push(`/data/pegawai/edit/${pegawai.id}`)}
+              >
+                Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-red-500 cursor-pointer"
+                onSelect={() => openDeleteDialog([pegawai])}
+              >
+                Hapus
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      )
+    },
+    enableSorting: false,
+    enableHiding: false,
+  }), [router])
 
   // Define table columns
   const columns: ColumnDef<Pegawai>[] = React.useMemo(
@@ -221,7 +211,7 @@ export function PegawaiDataTable() {
       },
       actionColumn(fetchData, openDeleteDialog),
     ],
-    [fetchData]
+    [fetchData, actionColumn, openDeleteDialog]
   )
 
   const table = useReactTable({
@@ -298,9 +288,19 @@ export function PegawaiDataTable() {
         />
         <div className="flex items-center gap-2">
           {table.getFilteredSelectedRowModel().rows.length > 0 && (
-             <Button variant="destructive" size="sm" onClick={() => openDeleteDialog(table.getFilteredSelectedRowModel().rows.map(r => r.original))}>
-                Hapus ({table.getFilteredSelectedRowModel().rows.length})
-             </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() =>
+                openDeleteDialog(
+                  table
+                    .getFilteredSelectedRowModel()
+                    .rows.map((r) => r.original)
+                )
+              }
+            >
+              Hapus ({table.getFilteredSelectedRowModel().rows.length})
+            </Button>
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -390,29 +390,38 @@ export function PegawaiDataTable() {
 
       {/* Pagination */}
       <div className="flex items-center justify-end space-x-2 py-4">
-         <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} dari{" "}
-            {table.getFilteredRowModel().rows.length} baris terpilih.
-         </div>
-         <div className="hidden items-center gap-2 lg:flex">
-              <Label htmlFor="rows-per-page" className="text-sm font-medium ">Baris per Halaman</Label>
-              <Select
-                value={`${table.getState().pagination.pageSize}`}
-                onValueChange={(val) => table.setPageSize(Number(val))}
-              >
-                <SelectTrigger size="sm" className="w-20 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" id="rows-per-page">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent side="top">
-                  {[10, 20, 30, 40, 50].map((n) => (
-                    <SelectItem key={n} value={`${n}`}>{n}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex w-fit items-center justify-center text-sm font-medium">
-              Halaman {table.getState().pagination.pageIndex + 1} dari {table.getPageCount()}
-            </div>
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} dari{" "}
+          {table.getFilteredRowModel().rows.length} baris terpilih.
+        </div>
+        <div className="hidden items-center gap-2 lg:flex">
+          <Label htmlFor="rows-per-page" className="text-sm font-medium">
+            Baris per Halaman
+          </Label>
+          <Select
+            value={`${table.getState().pagination.pageSize}`}
+            onValueChange={(val) => table.setPageSize(Number(val))}
+          >
+            <SelectTrigger
+              size="sm"
+              className="w-20 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold"
+              id="rows-per-page"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent side="top">
+              {[10, 20, 30, 40, 50].map((n) => (
+                <SelectItem key={n} value={`${n}`}>
+                  {n}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex w-fit items-center justify-center text-sm font-medium">
+          Halaman {table.getState().pagination.pageIndex + 1} dari{" "}
+          {table.getPageCount()}
+        </div>
         <Button
           variant="outline"
           size="sm"

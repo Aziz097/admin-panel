@@ -21,6 +21,17 @@ import { toast } from "sonner";
 
 export type KeuanganType = "optimasi" | "aki" | "ao" | "attb";
 
+interface KeuanganRow {
+  tahun: string;
+  bulan?: string;
+  semester?: string;
+  kategori?: string;
+  penetapan?: string;
+  optimasi?: string;
+  target?: string;
+  realisasi?: string;
+}
+
 const KATEGORI_OPTIONS = [
   "Perjalanan Dinas Non Diklat",
   "Bahan Makanan & Konsumsi",
@@ -28,7 +39,7 @@ const KATEGORI_OPTIONS = [
   "Barang Cetakan",
 ];
 
-const EMPTY_ROW = {
+const EMPTY_ROW: KeuanganRow = {
   tahun: new Date().getFullYear().toString(),
   bulan: "",
   semester: "",
@@ -40,7 +51,7 @@ const EMPTY_ROW = {
 };
 
 function formatIDR(value: string): string {
-  const num = value.replace(/\D/g, ""); // remove all non-digit characters
+  const num = value.replace(/\D/g, "");
   return num
     ? new Intl.NumberFormat("id-ID", {
         style: "currency",
@@ -54,21 +65,18 @@ function parseIDR(value: string): number {
   return Number(value.replace(/\D/g, ""));
 }
 
-
 export default function CreateKeuanganPage() {
   const router = useRouter();
   const [type, setType] = useState<KeuanganType>("optimasi");
-  const [rows, setRows] = useState<any[]>([EMPTY_ROW]);
-  const [existingData, setExistingData] = useState<any[]>([]); // Store existing data
+  const [rows, setRows] = useState<KeuanganRow[]>([EMPTY_ROW]);
+  const [existingData, setExistingData] = useState<KeuanganRow[]>([]);
 
-  // Load type from URL if available
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const typeFromURL = params.get("type") as KeuanganType;
     if (typeFromURL) setType(typeFromURL);
   }, []);
 
-  // Fetch existing data from backend when component loads
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -79,8 +87,8 @@ export default function CreateKeuanganPage() {
         } else {
           toast.error("Gagal memuat data.");
         }
-      } catch (error) {
-        console.error("Error fetching existing data:", error);
+      } catch (e) {
+        console.error("Error fetching existing data:", e);
         toast.error("Gagal memuat data.");
       }
     };
@@ -88,10 +96,10 @@ export default function CreateKeuanganPage() {
     fetchData();
   }, [type]);
 
-  const handleChange = (index: number, field: string, value: string) => {
+  const handleChange = (index: number, field: keyof KeuanganRow, value: string) => {
     const rawValue =
       ["penetapan", "optimasi", "target", "realisasi"].includes(field)
-        ? value.replace(/\D/g, "") // store only digits
+        ? value.replace(/\D/g, "")
         : value;
 
     setRows((prev) =>
@@ -99,22 +107,19 @@ export default function CreateKeuanganPage() {
     );
   };
 
-
   const addRow = () => setRows([...rows, EMPTY_ROW]);
   const removeRow = (index: number) => setRows(rows.filter((_, i) => i !== index));
 
   const handleSubmit = async () => {
     try {
       for (const row of rows) {
-        // Check for duplicates based on type
         let isDuplicate = false;
+
         if (type === "ao" || type === "attb") {
-          // Check for duplicate based on tahun and semester
           isDuplicate = existingData.some(
             (existing) => existing.tahun === row.tahun && existing.semester === row.semester
           );
         } else {
-          // Check for duplicate based on tahun and bulan
           isDuplicate = existingData.some(
             (existing) => existing.tahun === row.tahun && existing.bulan === row.bulan
           );
@@ -122,9 +127,11 @@ export default function CreateKeuanganPage() {
 
         if (isDuplicate) {
           toast.error(
-            `Data untuk ${row.tahun} - ${type === "ao" || type === "attb" ? 'Semester ' + row.semester : row.bulan} sudah ada.`
+            `Data untuk ${row.tahun} - ${
+              type === "ao" || type === "attb" ? "Semester " + row.semester : row.bulan
+            } sudah ada.`
           );
-          return; // Prevent submission if duplicate found
+          return;
         }
       }
 
@@ -136,7 +143,6 @@ export default function CreateKeuanganPage() {
         realisasi: r.realisasi ? parseIDR(r.realisasi) : undefined,
       }));
 
-
       const res = await fetch(`/api/keuangan?type=${type}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -147,7 +153,8 @@ export default function CreateKeuanganPage() {
 
       toast.success("Data berhasil ditambahkan");
       router.push(`/data/keuangan?type=${type}`);
-    } catch (error) {
+    } catch (e) {
+      console.error("Submission error:", e);
       toast.error("Terjadi kesalahan saat menyimpan.");
     }
   };
@@ -177,10 +184,10 @@ export default function CreateKeuanganPage() {
                 <SelectValue placeholder="Pilih Tipe" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="optimasi" className="cursor-pointer">Optimasi 5.4</SelectItem>
-                <SelectItem value="aki" className="cursor-pointer">Disburse AKI</SelectItem>
-                <SelectItem value="ao" className="cursor-pointer">Penyerapan AO</SelectItem>
-                <SelectItem value="attb" className="cursor-pointer">Penarikan ATTB</SelectItem>
+                <SelectItem value="optimasi">Optimasi 5.4</SelectItem>
+                <SelectItem value="aki">Disburse AKI</SelectItem>
+                <SelectItem value="ao">Penyerapan AO</SelectItem>
+                <SelectItem value="attb">Penarikan ATTB</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -189,29 +196,41 @@ export default function CreateKeuanganPage() {
             <Card key={index} className="w-full p-4 shadow-sm border rounded-lg sm:p-6">
               <div className="space-y-4">
                 <div className="w-full">
-                  <Label className="mb-1">Tahun</Label>
+                  <Label>Tahun</Label>
                   <Input
                     type="number"
                     value={form.tahun}
                     onChange={(e) => handleChange(index, "tahun", e.target.value)}
                     placeholder="Tahun"
-                    className="cursor-text"
                   />
                 </div>
 
                 {type === "aki" && (
                   <div className="w-full">
-                    <Label className="mb-1">Bulan</Label>
+                    <Label>Bulan</Label>
                     <Select
                       value={form.bulan}
                       onValueChange={(val) => handleChange(index, "bulan", val)}
                     >
-                      <SelectTrigger className="w-full cursor-pointer">
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Pilih Bulan" />
                       </SelectTrigger>
                       <SelectContent>
-                        {[ "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"].map((bulan) => (
-                          <SelectItem key={bulan} value={bulan} className="cursor-pointer">
+                        {[
+                          "Januari",
+                          "Februari",
+                          "Maret",
+                          "April",
+                          "Mei",
+                          "Juni",
+                          "Juli",
+                          "Agustus",
+                          "September",
+                          "Oktober",
+                          "November",
+                          "Desember",
+                        ].map((bulan) => (
+                          <SelectItem key={bulan} value={bulan}>
                             {bulan}
                           </SelectItem>
                         ))}
@@ -223,17 +242,30 @@ export default function CreateKeuanganPage() {
                 {type === "optimasi" && (
                   <div className="flex flex-col md:flex-row gap-4 w-full">
                     <div className="w-full md:w-[140px]">
-                      <Label className="mb-1">Bulan</Label>
+                      <Label>Bulan</Label>
                       <Select
                         value={form.bulan}
                         onValueChange={(val) => handleChange(index, "bulan", val)}
                       >
-                        <SelectTrigger className="w-full cursor-pointer">
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Pilih Bulan" />
                         </SelectTrigger>
                         <SelectContent>
-                          {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"].map((bulan) => (
-                            <SelectItem key={bulan} value={bulan} className="cursor-pointer">
+                          {[
+                            "Januari",
+                            "Februari",
+                            "Maret",
+                            "April",
+                            "Mei",
+                            "Juni",
+                            "Juli",
+                            "Agustus",
+                            "September",
+                            "Oktober",
+                            "November",
+                            "Desember",
+                          ].map((bulan) => (
+                            <SelectItem key={bulan} value={bulan}>
                               {bulan}
                             </SelectItem>
                           ))}
@@ -242,17 +274,17 @@ export default function CreateKeuanganPage() {
                     </div>
 
                     <div className="flex-1">
-                      <Label className="mb-1">Kategori</Label>
+                      <Label>Kategori</Label>
                       <Select
                         value={form.kategori}
                         onValueChange={(val) => handleChange(index, "kategori", val)}
                       >
-                        <SelectTrigger className="w-full cursor-pointer">
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Pilih Kategori" />
                         </SelectTrigger>
                         <SelectContent>
                           {KATEGORI_OPTIONS.map((k) => (
-                            <SelectItem key={k} value={k} className="cursor-pointer">
+                            <SelectItem key={k} value={k}>
                               {k}
                             </SelectItem>
                           ))}
@@ -264,17 +296,17 @@ export default function CreateKeuanganPage() {
 
                 {(type === "ao" || type === "attb") && (
                   <div className="w-full">
-                    <Label className="mb-1">Semester</Label>
+                    <Label>Semester</Label>
                     <Select
                       value={form.semester}
                       onValueChange={(val) => handleChange(index, "semester", val)}
                     >
-                      <SelectTrigger className="w-full cursor-pointer">
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Pilih Semester" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1" className="cursor-pointer">1</SelectItem>
-                        <SelectItem value="2" className="cursor-pointer">2</SelectItem>
+                        <SelectItem value="1">1</SelectItem>
+                        <SelectItem value="2">2</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -283,29 +315,27 @@ export default function CreateKeuanganPage() {
                 {type === "optimasi" && (
                   <>
                     <div className="w-full">
-                      <Label className="mb-1">Penetapan</Label>
+                      <Label>Penetapan</Label>
                       <Input
                         type="text"
                         inputMode="numeric"
-                        value={formatIDR(form.penetapan)}
+                        value={formatIDR(form.penetapan || "")}
                         onChange={(e) =>
                           handleChange(index, "penetapan", e.target.value)
                         }
                         placeholder="Masukkan jumlah penetapan"
-                        className="cursor-text"
                       />
                     </div>
                     <div className="w-full">
-                      <Label className="mb-1">Optimasi (Opsional)</Label>
+                      <Label>Optimasi (Opsional)</Label>
                       <Input
                         type="text"
                         inputMode="numeric"
-                        value={formatIDR(form.optimasi)}
+                        value={formatIDR(form.optimasi || "")}
                         onChange={(e) =>
                           handleChange(index, "optimasi", e.target.value)
                         }
                         placeholder="Masukkan jumlah optimasi"
-                        className="cursor-text"
                       />
                     </div>
                   </>
@@ -313,31 +343,29 @@ export default function CreateKeuanganPage() {
 
                 {type !== "optimasi" && (
                   <div className="w-full">
-                    <Label className="mb-1">Target</Label>
+                    <Label>Target</Label>
                     <Input
                       type="text"
                       inputMode="numeric"
-                      value={formatIDR(form.target)}
+                      value={formatIDR(form.target || "")}
                       onChange={(e) =>
                         handleChange(index, "target", e.target.value)
                       }
                       placeholder="Masukkan jumlah target"
-                      className="cursor-text"
                     />
                   </div>
                 )}
 
                 <div className="w-full">
-                  <Label className="mb-1">Realisasi (Opsional)</Label>
+                  <Label>Realisasi (Opsional)</Label>
                   <Input
                     type="text"
                     inputMode="numeric"
-                    value={formatIDR(form.realisasi)}
+                    value={formatIDR(form.realisasi || "")}
                     onChange={(e) =>
                       handleChange(index, "realisasi", e.target.value)
                     }
                     placeholder="Masukkan jumlah realisasi"
-                    className="cursor-text"
                   />
                 </div>
 
@@ -347,7 +375,7 @@ export default function CreateKeuanganPage() {
                       variant="destructive"
                       size="sm"
                       onClick={() => removeRow(index)}
-                      className="w-full sm:w-auto cursor-pointer"
+                      className="w-full sm:w-auto"
                     >
                       Hapus
                     </Button>
@@ -360,21 +388,17 @@ export default function CreateKeuanganPage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
             <Button
               variant="secondary"
-              className="w-full sm:w-auto cursor-pointer"
+              className="w-full sm:w-auto"
               onClick={() => router.push(`/data/keuangan?type=${type}`)}
             >
               Kembali
             </Button>
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto cursor-pointer"
-                onClick={addRow}
-              >
+              <Button variant="outline" onClick={addRow}>
                 + Tambah Baris
               </Button>
               <Button
-                className="w-full bg-sky-400 hover:bg-sky-500 sm:w-auto mt-2 sm:mt-0 cursor-pointer"
+                className="bg-sky-400 hover:bg-sky-500 text-white"
                 onClick={handleSubmit}
               >
                 Simpan

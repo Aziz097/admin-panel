@@ -12,7 +12,6 @@ export const signInAction = async (signInValues: SignInValues) => {
     });
     return { success: true };
   } catch (error) {
-
     if (error instanceof AuthError) {
       switch (error.type) {
         case "CredentialsSignin":
@@ -31,6 +30,7 @@ export const signOutAction = async (): Promise<{ success?: boolean; error?: stri
     await signOut({ redirect: false });
     return { success: true };
   } catch (error) {
+    console.error("Sign out error:", error); // This line resolves the ESLint warning
     return { error: "Failed to sign out. Please try again." };
   }
-}
+};

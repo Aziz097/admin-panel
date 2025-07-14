@@ -22,6 +22,114 @@ import { toast } from "sonner"
 
 type AdministrasiType = "komunikasi" | "sertifikasi" | "kepatuhan" | "ocr";
 
+interface KomunikasiForm {
+  tahun: string;
+  bulan: string;
+  namaIndikator: string;
+  target: string;
+  realisasi: string;
+}
+
+interface SertifikasiForm {
+  tahun: string;
+  bulan: string;
+  nomor: string;
+  nama: string;
+  status: string;
+  keterangan: string;
+}
+
+interface KepatuhanForm {
+  tahun: string;
+  bulan: string;
+  indikator: string;
+  kategori: string;
+  target: string;
+  realisasi: string;
+  keterangan: string;
+}
+
+interface OCRForm {
+  tahun: string;
+  semester: string;
+  kategoriOCR: string;
+  target: string;
+  realisasi: string;
+}
+
+type FormData = KomunikasiForm | SertifikasiForm | KepatuhanForm | OCRForm;
+
+// Type guard functions
+const isKomunikasiForm = (form: FormData): form is KomunikasiForm => {
+  return 'namaIndikator' in form;
+};
+
+const isSertifikasiForm = (form: FormData): form is SertifikasiForm => {
+  return 'nomor' in form && 'nama' in form;
+};
+
+const isKepatuhanForm = (form: FormData): form is KepatuhanForm => {
+  return 'indikator' in form && 'kategori' in form;
+};
+
+const isOCRForm = (form: FormData): form is OCRForm => {
+  return 'kategoriOCR' in form && 'semester' in form;
+};
+
+// Helper function to safely get target/realisasi values
+const getTargetRealisasi = (form: FormData) => {
+  if (isKomunikasiForm(form) || isKepatuhanForm(form) || isOCRForm(form)) {
+    return { target: form.target, realisasi: form.realisasi };
+  }
+  return { target: '', realisasi: '' };
+};
+
+// Helper function to safely get month/semester value
+const getMonthSemester = (form: FormData) => {
+  if (isOCRForm(form)) {
+    return form.semester;
+  }
+  if (isKomunikasiForm(form) || isSertifikasiForm(form) || isKepatuhanForm(form)) {
+    return form.bulan;
+  }
+  return '';
+};
+
+interface KomunikasiPayload {
+  tahun: string;
+  bulan: string;
+  namaIndikator: string;
+  target: number;
+  realisasi: number | null;
+}
+
+interface SertifikasiPayload {
+  tahun: string;
+  bulan: string;
+  nomor: string;
+  nama: string;
+  status: string;
+  keterangan: string;
+}
+
+interface KepatuhanPayload {
+  tahun: string;
+  bulan: string;
+  indikator: string;
+  kategori: string;
+  target: number;
+  realisasi: number | null;
+  keterangan: string | null;
+}
+
+interface OCRPayload {
+  tahun: string;
+  semester: string;
+  kategoriOCR: string;
+  target: number;
+  realisasi: number | null;
+}
+
 const INDIKATOR_KOMUNIKASI_OPTIONS = [
   "Release Berita", "Konten Foto", "Akun Influencer Aktif",
   "Share Berita Internal", "Scoring Publikasi", "Laporan Permintaan Publik",
@@ -69,7 +177,7 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
   const searchParams = useSearchParams()
   const typeFromURL = searchParams.get("type") as AdministrasiType
 
-  const [form, setForm] = useState<any>(null)
+  const [form, setForm] = useState<FormData | null>(null)
   const [type, setType] = useState<AdministrasiType | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -98,11 +206,21 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
           throw new Error("Data tidak ditemukan.");
         }
 
-        const initialFormState = {
+        const initialFormState: FormData = {
           ...data,
           target: data.target?.toString() ?? "",
           realisasi: data.realisasi?.toString() ?? "",
-          status: data.status?.toString(),
+          status: data.status?.toString() ?? "",
+          keterangan: data.keterangan ?? "",
+          nomor: data.nomor ?? "",
+          nama: data.nama ?? "",
+          namaIndikator: data.namaIndikator ?? "",
+          indikator: data.indikator ?? "",
+          kategori: data.kategori ?? "",
+          kategoriOCR: data.kategoriOCR ?? "",
+          semester: data.semester ?? "",
+          bulan: data.bulan ?? "",
+          tahun: data.tahun ?? "",
         };
 
         setForm(initialFormState);
@@ -110,11 +228,13 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
 
         // Init display formatting
         if (typeFromURL === "komunikasi" && data.namaIndikator === "Scoring Publikasi") {
-          setDisplayTarget(formatIDR(initialFormState.target))
-          setDisplayRealisasi(formatIDR(initialFormState.realisasi))
+          const { target, realisasi } = getTargetRealisasi(initialFormState);
+          setDisplayTarget(formatIDR(target))
+          setDisplayRealisasi(formatIDR(realisasi))
         }
-      } catch (error: any) {
-        toast.error(error.message || "Gagal memuat data.");
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : "Gagal memuat data.";
+        toast.error(errorMessage);
         router.push(`/data/administrasi?type=${typeFromURL || 'komunikasi'}`)
       } finally {
         setIsLoading(false);
@@ -125,53 +245,57 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
   }, [typeFromURL, id, router])
 
   const handleChange = (field: string, value: string) => {
-    setForm((prev: any) => ({ ...prev, [field]: value }))
+    setForm((prev: FormData | null) => prev ? ({ ...prev, [field]: value }) : null)
   }
 
   const handleSubmit = async () => {
     if (!type || !form) return;
 
     try {
-      let payload: any;
+      let payload: KomunikasiPayload | SertifikasiPayload | KepatuhanPayload | OCRPayload;
 
       switch (type) {
         case "komunikasi":
+          const komunikasiForm = form as KomunikasiForm;
           payload = {
-            tahun: form.tahun,
-            bulan: form.bulan,
-            namaIndikator: form.namaIndikator,
-            target: parseInt(form.target, 10) || 0,
-            realisasi: form.realisasi ? parseInt(form.realisasi, 10) : null,
+            tahun: komunikasiForm.tahun,
+            bulan: komunikasiForm.bulan,
+            namaIndikator: komunikasiForm.namaIndikator,
+            target: parseInt(komunikasiForm.target, 10) || 0,
+            realisasi: komunikasiForm.realisasi ? parseInt(komunikasiForm.realisasi, 10) : null,
           };
           break;
         case "sertifikasi":
+          const sertifikasiForm = form as SertifikasiForm;
           payload = {
-            tahun: form.tahun,
-            bulan: form.bulan,
-            nomor: form.nomor,
-            nama: form.nama,
-            status: form.status,
-            keterangan: form.keterangan,
+            tahun: sertifikasiForm.tahun,
+            bulan: sertifikasiForm.bulan,
+            nomor: sertifikasiForm.nomor,
+            nama: sertifikasiForm.nama,
+            status: sertifikasiForm.status,
+            keterangan: sertifikasiForm.keterangan,
           };
           break;
         case "kepatuhan":
+          const kepatuhanForm = form as KepatuhanForm;
           payload = {
-            tahun: form.tahun,
-            bulan: form.bulan,
-            indikator: form.indikator,
-            kategori: form.kategori,
-            target: parseInt(form.target, 10) || 0,
-            realisasi: form.realisasi ? parseInt(form.realisasi, 10) : null,
-            keterangan: form.keterangan || null,
+            tahun: kepatuhanForm.tahun,
+            bulan: kepatuhanForm.bulan,
+            indikator: kepatuhanForm.indikator,
+            kategori: kepatuhanForm.kategori,
+            target: parseInt(kepatuhanForm.target, 10) || 0,
+            realisasi: kepatuhanForm.realisasi ? parseInt(kepatuhanForm.realisasi, 10) : null,
+            keterangan: kepatuhanForm.keterangan || null,
           };
           break;
         case "ocr":
+          const ocrForm = form as OCRForm;
           payload = {
-            tahun: form.tahun,
-            semester: form.semester,
-            kategoriOCR: form.kategoriOCR,
-            target: parseInt(form.target, 10) || 0,
-            realisasi: form.realisasi ? parseInt(form.realisasi, 10) : null,
+            tahun: ocrForm.tahun,
+            semester: ocrForm.semester,
+            kategoriOCR: ocrForm.kategoriOCR,
+            target: parseInt(ocrForm.target, 10) || 0,
+            realisasi: ocrForm.realisasi ? parseInt(ocrForm.realisasi, 10) : null,
           };
           break;
         default:
@@ -192,8 +316,9 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
       toast.success("Data berhasil diperbarui")
       router.push(`/data/administrasi?type=${type}`)
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message || "Terjadi kesalahan saat menyimpan.")
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Terjadi kesalahan saat menyimpan.";
+      toast.error(errorMessage);
     }
   }
 
@@ -241,7 +366,7 @@ if (!form || !type) {
               {type !== 'ocr' ? (
                 <div className="w-full">
                   <Label className="mb-1 block">Bulan</Label>
-                  <Select value={form.bulan} onValueChange={(val) => handleChange("bulan", val)}>
+                  <Select value={getMonthSemester(form)} onValueChange={(val) => handleChange("bulan", val)}>
                     <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Bulan" /></SelectTrigger>
                     <SelectContent>
                       {["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"].map(b => (
@@ -253,7 +378,7 @@ if (!form || !type) {
               ) : (
                 <div className="w-full">
                   <Label className="mb-1 block">Semester</Label>
-                  <Select value={form.semester} onValueChange={(val) => handleChange("semester", val)}>
+                  <Select value={getMonthSemester(form)} onValueChange={(val) => handleChange("semester", val)}>
                     <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Semester" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="1">Semester 1</SelectItem>
@@ -267,11 +392,12 @@ if (!form || !type) {
                 <>
                   <div className="md:col-span-2">
                     <Label className="mb-1 block">Nama Indikator</Label>
-                    <Select value={form.namaIndikator} onValueChange={(val) => {
+                    <Select value={(form as KomunikasiForm).namaIndikator} onValueChange={(val) => {
                       handleChange("namaIndikator", val);
                       if (val === "Scoring Publikasi") {
-                        setDisplayTarget(formatIDR(form.target))
-                        setDisplayRealisasi(formatIDR(form.realisasi))
+                        const { target, realisasi } = getTargetRealisasi(form);
+                        setDisplayTarget(formatIDR(target))
+                        setDisplayRealisasi(formatIDR(realisasi))
                       }
                     }}>
                       <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Indikator" /></SelectTrigger>
@@ -283,7 +409,7 @@ if (!form || !type) {
 
                   <div className="w-full">
                     <Label className="mb-1 block">Target</Label>
-                    {form.namaIndikator === "Scoring Publikasi" ? (
+                    {(form as KomunikasiForm).namaIndikator === "Scoring Publikasi" ? (
                       <Input
                         value={displayTarget}
                         onChange={(e) => {
@@ -293,13 +419,13 @@ if (!form || !type) {
                         }}
                       />
                     ) : (
-                      <Input type="number" value={form.target} onChange={(e) => handleChange("target", e.target.value)} />
+                      <Input type="number" value={getTargetRealisasi(form).target} onChange={(e) => handleChange("target", e.target.value)} />
                     )}
                   </div>
 
                   <div className="w-full">
                     <Label className="mb-1 block">Realisasi</Label>
-                    {form.namaIndikator === "Scoring Publikasi" ? (
+                    {(form as KomunikasiForm).namaIndikator === "Scoring Publikasi" ? (
                       <Input
                         value={displayRealisasi}
                         onChange={(e) => {
@@ -309,7 +435,7 @@ if (!form || !type) {
                         }}
                       />
                     ) : (
-                      <Input type="number" value={form.realisasi} onChange={(e) => handleChange("realisasi", e.target.value)} />
+                      <Input type="number" value={getTargetRealisasi(form).realisasi} onChange={(e) => handleChange("realisasi", e.target.value)} />
                     )}
                   </div>
                 </>
@@ -319,15 +445,15 @@ if (!form || !type) {
                     <>
                         <div className="w-full">
                             <Label className="mb-1 block">Nomor</Label>
-                            <Input className="w-full" value={form.nomor} onChange={(e) => handleChange("nomor", e.target.value)} />
+                            <Input className="w-full" value={(form as SertifikasiForm).nomor} onChange={(e) => handleChange("nomor", e.target.value)} />
                         </div>
                         <div className="w-full">
                             <Label className="mb-1 block">Nama</Label>
-                            <Input className="w-full" value={form.nama} onChange={(e) => handleChange("nama", e.target.value)} />
+                            <Input className="w-full" value={(form as SertifikasiForm).nama} onChange={(e) => handleChange("nama", e.target.value)} />
                         </div>
                         <div className="md:col-span-2">
                             <Label className="mb-1 block">Status</Label>
-                            <Select value={form.status} onValueChange={(val) => handleChange("status", val)}>
+                            <Select value={(form as SertifikasiForm).status} onValueChange={(val) => handleChange("status", val)}>
                                 <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="Proses">Proses</SelectItem>
@@ -337,7 +463,7 @@ if (!form || !type) {
                         </div>
                         <div className="md:col-span-2">
                             <Label className="mb-1 block">Keterangan</Label>
-                            <Input className="w-full" value={form.keterangan} onChange={(e) => handleChange("keterangan", e.target.value)} />
+                            <Input className="w-full" value={(form as SertifikasiForm).keterangan} onChange={(e) => handleChange("keterangan", e.target.value)} />
                         </div>
                     </>
                 )}
@@ -346,23 +472,23 @@ if (!form || !type) {
                       <>
                         <div className="w-full">
                             <Label className="mb-1 block">Indikator</Label>
-                            <Input className="w-full" value={form.indikator} onChange={(e) => handleChange("indikator", e.target.value)} />
+                            <Input className="w-full" value={(form as KepatuhanForm).indikator} onChange={(e) => handleChange("indikator", e.target.value)} />
                         </div>
                         <div className="w-full">
                             <Label className="mb-1 block">Kategori</Label>
-                            <Input className="w-full" value={form.kategori} onChange={(e) => handleChange("kategori", e.target.value)} />
+                            <Input className="w-full" value={(form as KepatuhanForm).kategori} onChange={(e) => handleChange("kategori", e.target.value)} />
                         </div>
                         <div className="w-full">
                             <Label className="mb-1 block">Target</Label>
-                            <Input className="w-full" type="number" value={form.target} onChange={(e) => handleChange("target", e.target.value)} />
+                            <Input className="w-full" type="number" value={getTargetRealisasi(form).target} onChange={(e) => handleChange("target", e.target.value)} />
                         </div>
                         <div className="w-full">
                             <Label className="mb-1 block">Realisasi</Label>
-                            <Input className="w-full" type="number" value={form.realisasi} onChange={(e) => handleChange("realisasi", e.target.value)} />
+                            <Input className="w-full" type="number" value={getTargetRealisasi(form).realisasi} onChange={(e) => handleChange("realisasi", e.target.value)} />
                         </div>
                          <div className="md:col-span-2">
                             <Label className="mb-1 block">Keterangan</Label>
-                            <Input className="w-full" value={form.keterangan} onChange={(e) => handleChange("keterangan", e.target.value)} />
+                            <Input className="w-full" value={(form as KepatuhanForm).keterangan} onChange={(e) => handleChange("keterangan", e.target.value)} />
                         </div>
                     </>
                 )}
@@ -371,7 +497,7 @@ if (!form || !type) {
                   <>
                     <div className="md:col-span-2">
                       <Label className="mb-1 block">Kategori OCR</Label>
-                      <Select value={form.kategoriOCR} onValueChange={(val) => handleChange("kategoriOCR", val)}>
+                      <Select value={(form as OCRForm).kategoriOCR} onValueChange={(val) => handleChange("kategoriOCR", val)}>
                           <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Kategori OCR" /></SelectTrigger>
                           <SelectContent>
                               {KATEGORI_OCR_OPTIONS.map((cat) => (<SelectItem key={cat} value={cat}>{cat}</SelectItem>))}
@@ -380,11 +506,11 @@ if (!form || !type) {
                     </div>
                     <div className="w-full">
                       <Label className="mb-1 block">Target</Label>
-                      <Input type="number" value={form.target} onChange={(e) => handleChange("target", e.target.value)} placeholder="Jumlah Target" className="w-full"/>
+                      <Input type="number" value={getTargetRealisasi(form).target} onChange={(e) => handleChange("target", e.target.value)} placeholder="Jumlah Target" className="w-full"/>
                     </div>
                     <div className="w-full">
                       <Label className="mb-1 block">Realisasi</Label>
-                      <Input type="number" value={form.realisasi} onChange={(e) => handleChange("realisasi", e.target.value)} placeholder="Jumlah Realisasi" className="w-full"/>
+                      <Input type="number" value={getTargetRealisasi(form).realisasi} onChange={(e) => handleChange("realisasi", e.target.value)} placeholder="Jumlah Realisasi" className="w-full"/>
                     </div>
                   </>
                 )}

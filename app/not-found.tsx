@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 export default function NotFound() {
   const router = useRouter();
@@ -12,7 +13,7 @@ export default function NotFound() {
 
       <div className='flex justify-center'>
         <div className='relative w-100 h-60 flex items-center justify-center'>
-          <img 
+          <Image 
             src="/not-found.png" 
             alt="Maskot petir yang terlihat sedih dan terputus koneksinya"
             className='w-full h-full object-contain drop-shadow-lg filter brightness-110'

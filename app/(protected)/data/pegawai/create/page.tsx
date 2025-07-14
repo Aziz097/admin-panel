@@ -11,7 +11,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { toast } from "sonner"
-import { IconPlus, IconTrash } from "@tabler/icons-react"
+import { IconTrash } from "@tabler/icons-react"
 
 // Define the structure for a single employee row in the form
 type PegawaiRow = {
@@ -97,8 +97,12 @@ export default function CreatePegawaiPage() {
 
       toast.success(`${rows.length} data pegawai berhasil ditambahkan.`)
       router.push("/data/pegawai") // Redirect after successful submission
-    } catch (error: any) {
-      toast.error(error.message || "Terjadi kesalahan saat menyimpan data.")
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        toast.error(error.message || "Terjadi kesalahan saat menyimpan data.")
+      } else {
+        toast.error("Terjadi kesalahan saat menyimpan data.")
+      }
     } finally {
       setIsSubmitting(false)
     }

@@ -59,7 +59,13 @@ export function KomunikasiCards({ tahun }: { tahun: string }) {
       setIsLoading(true);
       try {
         const apiData = await fetchIndicatorData(bulan, tahun);
-        const mappedData = apiData.map((item: any) => ({
+        const mappedData = apiData.map((item: {
+          namaIndikator: string;
+          realisasi: number;
+          target: number;
+          bulan: string;
+          tahun: string;
+        }) => ({
           title: item.namaIndikator,
           value: item.realisasi ?? 0,
           target: item.target || 0,

@@ -207,15 +207,24 @@ export function ChartRadialATTB({ tahun }: { tahun: string }) {
                 if (!payload?.length) return null
                 return (
                   <div className="rounded-xl p-4 text-sm shadow-xl min-w-[220px] space-y-2 bg-white text-black">
-                    {payload.map((entry: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between gap-2">
-                        <span className="flex items-center gap-2">
-                          <span className="inline-block size-2 rounded-sm" style={{ backgroundColor: entry.color }} />
-                          <span className="text-muted-foreground">{entry.name}</span>
-                        </span>
-                        <span className="font-medium tabular-nums">{formatRupiah(entry.value)}</span>
-                      </div>
-                    ))}
+                    {payload.map(
+                      (
+                        entry: {
+                          color: string
+                          name: string
+                          value: number
+                        },
+                        index: number
+                      ) => (
+                        <div key={index} className="flex items-center justify-between gap-2">
+                          <span className="flex items-center gap-2">
+                            <span className="inline-block size-2 rounded-sm" style={{ backgroundColor: entry.color }} />
+                            <span className="text-muted-foreground">{entry.name}</span>
+                          </span>
+                          <span className="font-medium tabular-nums">{formatRupiah(entry.value)}</span>
+                        </div>
+                      )
+                    )}
                   </div>
                 )
               }}

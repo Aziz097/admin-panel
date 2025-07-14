@@ -68,7 +68,7 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
           realisasi: data.realisasi?.toString() || "",
         })
         setType(data.type)
-      } catch (error) {
+      } catch (unknown) {
         toast.error("Gagal memuat data.")
         router.push("/data/keuangan")
       }
@@ -113,7 +113,7 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
 
       toast.success("Data berhasil diperbarui")
       router.push(`/data/keuangan?type=${type}`)
-    } catch (error) {
+    } catch (unknown) {
       toast.error("Terjadi kesalahan saat menyimpan.")
     }
   }

@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react"
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   Select,
   SelectTrigger,
@@ -17,9 +17,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
 
 // Mapping month numbers to full names
 const bulanMapping: Record<string, string> = {
@@ -42,21 +40,17 @@ const bulanList = Object.entries(bulanMapping)
   .map(([value, label]) => ({ label, value }))
   .sort((a, b) => parseInt(a.value) - parseInt(b.value)); // Sort by month value
 
-// Chart config
-const chartConfig = {
-  realisasi: {
-    label: "Realisasi",
-    color: "black",
-  },
-  sisa: {
-    label: "Sisa Target",
-    color: "rgba(0, 0, 0, 0.3)",
-  },
-};
+// Remove unused chartConfig and formatPersen
+// const chartConfig = { ... };
+// function formatPersen(value: number) { ... }
 
-function formatPersen(value: number) {
-  return `${value.toFixed(0)}`;
-}
+// Define a type for sertifikatData
+type SertifikatItem = {
+  nomor: string;
+  nama: string;
+  status: string;
+  keterangan?: string;
+};
 
 const getInitialMonth = (tahun: string) => {
   const now = new Date();
@@ -68,7 +62,7 @@ const getInitialMonth = (tahun: string) => {
 
 export function SertifikasiChart({ tahun }: { tahun: string }) {
   const [bulan, setBulan] = React.useState<string>(() => getInitialMonth(tahun));
-  const [sertifikatData, setSertifikatData] = useState<any[]>([]);
+  const [sertifikatData, setSertifikatData] = useState<SertifikatItem[]>([]); // Use the new type
   const [isLoading, setIsLoading] = useState(true); // Loading state for the chart
   const [isAllZero, setIsAllZero] = useState(false); // Flag to check if all data is zero
 

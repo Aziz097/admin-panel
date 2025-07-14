@@ -1,11 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { usePathname } from "next/navigation"
 import {
   IconDashboard,
   IconDatabase,
-  IconInnerShadowTop,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -19,6 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import Image from "next/image"
 
 const data = {
   navMain: [
@@ -67,8 +66,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:!p-1.5"
               >
-              <img
+              <Image
                 src="/logo-upt-tkr.png"
+                width={150}
+                height={150}
                 alt="UPT PLN Logo"
                 className="object-contain h-10 w-auto cursor-pointer"
               />

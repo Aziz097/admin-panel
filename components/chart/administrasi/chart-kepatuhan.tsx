@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { CheckCircle, Loader2, AlertCircle } from "lucide-react"
+import { CheckCircle, Loader2 } from "lucide-react"
 
 // --- Type Definitions ---
 type KepatuhanApiData = {
@@ -161,7 +161,7 @@ export function KepatuhanChart({ tahun }: { tahun: string }) {
                                         <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} interval={0} />
                                         <Tooltip
                                             cursor={false}
-                                            content={({ payload, label }) => {
+                                            content={({ label }) => {
                                                 const current = chartData.find(d => d.month === label);
                                                 if (!current || current.Target === 0) return null;
                                                 const percentage = (current.OriginalRealisasi / current.Target) * 100;
