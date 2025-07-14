@@ -30,15 +30,17 @@ const KATEGORI_OPTIONS = [
 ]
 
 function formatRupiah(value: string): string {
-  const numberString = value.replace(/[^\d,]/g, "").replace(",", ".")
-  const parts = numberString.split(".")
-  const integerPart = parts[0].replace(/^0+/, "") || "0"
-  const formattedInt = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".")
-  return parts.length > 1 ? `${formattedInt},${parts[1]}` : formattedInt
+  const num = value.replace(/\D/g, "") // hapus semua karakter non-digit
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(parseInt(num || "0"))
 }
 
+
 function parseRupiah(value: string): number {
-  return Number(value.replace(/\./g, "").replace(",", "."))
+  return Number(value.replace(/[^\d]/g, "")) || 0
 }
 
 export default function EditKeuanganPage(props: { params: Promise<{ id: string }> }) {

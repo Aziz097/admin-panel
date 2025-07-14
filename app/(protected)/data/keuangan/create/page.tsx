@@ -39,17 +39,21 @@ const EMPTY_ROW = {
   realisasi: "",
 };
 
-function formatRupiah(value: string): string {
-  const numberString = value.replace(/[^\d,]/g, "").replace(",", ".");
-  const parts = numberString.split(".");
-  const integerPart = parts[0].replace(/^0+/, "") || "0";
-  const formattedInt = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-  return parts.length > 1 ? `${formattedInt},${parts[1]}` : formattedInt;
+function formatIDR(value: string): string {
+  const num = value.replace(/\D/g, ""); // remove all non-digit characters
+  return num
+    ? new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+      }).format(parseInt(num, 10))
+    : "";
 }
 
-function parseRupiah(value: string): number {
-  return Number(value.replace(/\./g, "").replace(",", "."));
+function parseIDR(value: string): number {
+  return Number(value.replace(/\D/g, ""));
 }
+
 
 export default function CreateKeuanganPage() {
   const router = useRouter();
@@ -85,10 +89,16 @@ export default function CreateKeuanganPage() {
   }, [type]);
 
   const handleChange = (index: number, field: string, value: string) => {
+    const rawValue =
+      ["penetapan", "optimasi", "target", "realisasi"].includes(field)
+        ? value.replace(/\D/g, "") // store only digits
+        : value;
+
     setRows((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
+      prev.map((row, i) => (i === index ? { ...row, [field]: rawValue } : row))
     );
   };
+
 
   const addRow = () => setRows([...rows, EMPTY_ROW]);
   const removeRow = (index: number) => setRows(rows.filter((_, i) => i !== index));
@@ -120,11 +130,12 @@ export default function CreateKeuanganPage() {
 
       const sanitizedRows = rows.map((r) => ({
         ...r,
-        penetapan: r.penetapan ? parseRupiah(r.penetapan) : undefined,
-        optimasi: r.optimasi ? parseRupiah(r.optimasi) : undefined,
-        target: r.target ? parseRupiah(r.target) : undefined,
-        realisasi: r.realisasi ? parseRupiah(r.realisasi) : undefined,
+        penetapan: r.penetapan ? parseIDR(r.penetapan) : undefined,
+        optimasi: r.optimasi ? parseIDR(r.optimasi) : undefined,
+        target: r.target ? parseIDR(r.target) : undefined,
+        realisasi: r.realisasi ? parseIDR(r.realisasi) : undefined,
       }));
+
 
       const res = await fetch(`/api/keuangan?type=${type}`, {
         method: "POST",
@@ -276,7 +287,7 @@ export default function CreateKeuanganPage() {
                       <Input
                         type="text"
                         inputMode="numeric"
-                        value={formatRupiah(form.penetapan)}
+                        value={formatIDR(form.penetapan)}
                         onChange={(e) =>
                           handleChange(index, "penetapan", e.target.value)
                         }
@@ -289,7 +300,7 @@ export default function CreateKeuanganPage() {
                       <Input
                         type="text"
                         inputMode="numeric"
-                        value={formatRupiah(form.optimasi)}
+                        value={formatIDR(form.optimasi)}
                         onChange={(e) =>
                           handleChange(index, "optimasi", e.target.value)
                         }
@@ -306,7 +317,7 @@ export default function CreateKeuanganPage() {
                     <Input
                       type="text"
                       inputMode="numeric"
-                      value={formatRupiah(form.target)}
+                      value={formatIDR(form.target)}
                       onChange={(e) =>
                         handleChange(index, "target", e.target.value)
                       }
@@ -321,7 +332,7 @@ export default function CreateKeuanganPage() {
                   <Input
                     type="text"
                     inputMode="numeric"
-                    value={formatRupiah(form.realisasi)}
+                    value={formatIDR(form.realisasi)}
                     onChange={(e) =>
                       handleChange(index, "realisasi", e.target.value)
                     }

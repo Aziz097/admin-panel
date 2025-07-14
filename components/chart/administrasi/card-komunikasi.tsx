@@ -93,11 +93,11 @@ export function KomunikasiCards({ tahun }: { tahun: string }) {
       <div className="flex items-center gap-2 mt-8">
         <div className="relative w-full h-2 rounded bg-gray-200 overflow-hidden">
           <div
-            className={`absolute h-2 left-0 top-0 rounded ${isComplete ? 'bg-sky-500' : 'bg-sky-400'}`}
+            className={`absolute h-2 left-0 top-0 rounded ${isComplete ? 'bg-sky-500' : 'bg-sky-500'}`}
             style={{ width: `${percent}%` }}
           />
         </div>
-        <span className={`text-xs font-semibold ${isComplete ? 'text-sky-500' : 'text-sky-400'}`}>
+        <span className={`text-xs font-semibold ${isComplete ? 'text-sky-600' : 'text-sky-600'}`}>
           {percent.toFixed(0)}%
         </span>
       </div>

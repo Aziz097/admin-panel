@@ -362,8 +362,28 @@ export function DataTable() {
     { accessorKey: 'tahun', header: 'Tahun' },
     { accessorKey: 'bulan', header: 'Bulan', cell: ({ row }) => getMonthName(row.original.bulan) },
     { accessorKey: 'keterangan', header: 'Keterangan' },
-    { accessorKey: 'target', header: 'Target' },
-    { accessorKey: 'realisasi', header: 'Realisasi' },
+    {
+      accessorKey: 'target',
+      header: 'Target',
+      cell: ({ row }) => {
+        const { type, namaIndikator, target } = row.original;
+        if (type === 'komunikasi' && namaIndikator === 'Scoring Publikasi') {
+          return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(target || 0));
+        }
+        return target ?? '-';
+      }
+    },
+    {
+      accessorKey: 'realisasi',
+      header: 'Realisasi',
+      cell: ({ row }) => {
+        const { type, namaIndikator, realisasi } = row.original;
+        if (type === 'komunikasi' && namaIndikator === 'Scoring Publikasi') {
+          return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(Number(realisasi || 0));
+        }
+        return realisasi ?? '-';
+      }
+    },
     { accessorKey: 'namaIndikator', header: 'Nama Indikator' },
     { accessorKey: 'nomor', header: 'Nomor' },
     { accessorKey: 'nama', header: 'Nama Sertifikasi' },

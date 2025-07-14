@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-// Menggunakan import yang sesuai dengan proyek Anda
 import prisma from "@/lib/prisma";
 
 /**
@@ -59,7 +58,6 @@ export async function GET() {
       ...ocrTahun.map(item => item.tahun),
     ];
 
-    // Hapus duplikat dan urutkan dari terbaru ke terlama
     const tahunUnik = [...new Set(semuaTahun)];
     tahunUnik.sort((a, b) => b.localeCompare(a));
 

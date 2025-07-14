@@ -56,6 +56,16 @@ const EMPTY_ROW = {
   kategoriOCR: "",
 };
 
+function formatIDR(value: string): string {
+  const num = value.replace(/\D/g, ""); // hapus semua karakter non-digit
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(parseInt(num || "0"));
+}
+
+
 export default function CreateAdministrasiPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -215,25 +225,69 @@ export default function CreateAdministrasiPage() {
                 )}
                 
                 {/* --- Dynamic Fields based on Type --- */}
-
                 {type === "komunikasi" && (
                   <>
                     <div className="md:col-span-2">
                       <Label className="mb-1 block">Nama Indikator</Label>
-                      <Select value={form.namaIndikator} onValueChange={(val) => handleChange(index, "namaIndikator", val)}>
-                          <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Nama Indikator" /></SelectTrigger>
-                          <SelectContent>
-                              {INDIKATOR_KOMUNIKASI_OPTIONS.map((i) => (<SelectItem key={i} value={i}>{i}</SelectItem>))}
-                          </SelectContent>
+                      <Select
+                        value={form.namaIndikator}
+                        onValueChange={(val) => handleChange(index, "namaIndikator", val)}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Pilih Nama Indikator" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {INDIKATOR_KOMUNIKASI_OPTIONS.map((i) => (
+                            <SelectItem key={i} value={i}>{i}</SelectItem>
+                          ))}
+                        </SelectContent>
                       </Select>
                     </div>
+
                     <div className="w-full">
                       <Label className="mb-1 block">Target</Label>
-                      <Input type="number" value={form.target} onChange={(e) => handleChange(index, "target", e.target.value)} placeholder="Jumlah Target" className="w-full"/>
+                      <Input
+                        type="text"
+                        value={
+                          form.namaIndikator === "Scoring Publikasi"
+                            ? formatIDR(form.target)
+                            : form.target
+                        }
+                        onChange={(e) =>
+                          handleChange(
+                            index,
+                            "target",
+                            form.namaIndikator === "Scoring Publikasi"
+                              ? e.target.value.replace(/\D/g, "")
+                              : e.target.value
+                          )
+                        }
+                        placeholder="Jumlah Target"
+                        className="w-full"
+                      />
                     </div>
+
                     <div className="w-full">
                       <Label className="mb-1 block">Realisasi</Label>
-                      <Input type="number" value={form.realisasi} onChange={(e) => handleChange(index, "realisasi", e.target.value)} placeholder="Jumlah Realisasi" className="w-full"/>
+                      <Input
+                        type="text"
+                        value={
+                          form.namaIndikator === "Scoring Publikasi"
+                            ? formatIDR(form.realisasi)
+                            : form.realisasi
+                        }
+                        onChange={(e) =>
+                          handleChange(
+                            index,
+                            "realisasi",
+                            form.namaIndikator === "Scoring Publikasi"
+                              ? e.target.value.replace(/\D/g, "")
+                              : e.target.value
+                          )
+                        }
+                        placeholder="Jumlah Realisasi"
+                        className="w-full"
+                      />
                     </div>
                   </>
                 )}

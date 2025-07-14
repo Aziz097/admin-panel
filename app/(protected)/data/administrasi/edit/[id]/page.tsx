@@ -20,54 +20,47 @@ import { SiteHeader } from "@/components/site-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { toast } from "sonner"
 
-// **DIUBAH**: Menghapus 'tjsl' dan menambahkan 'ocr'
 type AdministrasiType = "komunikasi" | "sertifikasi" | "kepatuhan" | "ocr";
 
 const INDIKATOR_KOMUNIKASI_OPTIONS = [
-    "Release Berita", "Konten Foto", "Akun Influencer Aktif",
-    "Share Berita Internal", "Scoring Publikasi", "Laporan Permintaan Publik",
+  "Release Berita", "Konten Foto", "Akun Influencer Aktif",
+  "Share Berita Internal", "Scoring Publikasi", "Laporan Permintaan Publik",
 ];
 
 const KATEGORI_OCR_OPTIONS = ["KC", "COP", "KP", "Inovasi"];
 
 const getMonthName = (monthNum: string): string => {
-    if (!monthNum) return "";
-    const monthNames: { [key: string]: string } = {
-        '01': 'Januari', '02': 'Februari', '03': 'Maret', '04': 'April', 
-        '05': 'Mei', '06': 'Juni', '07': 'Juli', '08': 'Agustus', 
-        '09': 'September', '10': 'Oktober', '11': 'November', '12': 'Desember',
-    };
-    return monthNames[monthNum] || monthNum;
+  if (!monthNum) return "";
+  const monthNames: { [key: string]: string } = {
+    '01': 'Januari', '02': 'Februari', '03': 'Maret', '04': 'April',
+    '05': 'Mei', '06': 'Juni', '07': 'Juli', '08': 'Agustus',
+    '09': 'September', '10': 'Oktober', '11': 'November', '12': 'Desember',
+  };
+  return monthNames[monthNum] || monthNum;
 };
 
-// **BARU**: Komponen Skeleton untuk form
+function formatIDR(value: string): string {
+  const num = value.replace(/\D/g, "");
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(parseInt(num || "0"));
+}
+
 function EditFormSkeleton() {
-    return (
-        <Card className="w-full p-4 shadow-sm border rounded-lg sm:p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-1/5" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-1/5" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="md:col-span-2 space-y-2">
-                    <Skeleton className="h-4 w-1/6" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-                <div className="space-y-2">
-                    <Skeleton className="h-4 w-1/4" />
-                    <Skeleton className="h-10 w-full" />
-                </div>
-            </div>
-        </Card>
-    )
+  return (
+    <Card className="w-full p-4 shadow-sm border rounded-lg sm:p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton className="h-4 w-1/5" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        ))}
+      </div>
+    </Card>
+  )
 }
 
 export default function EditAdministrasiPage({ params }: { params: Promise<{ id: string }> }) {
@@ -78,13 +71,16 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
 
   const [form, setForm] = useState<any>(null)
   const [type, setType] = useState<AdministrasiType | null>(null)
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true)
+
+  const [displayTarget, setDisplayTarget] = useState("")
+  const [displayRealisasi, setDisplayRealisasi] = useState("")
 
   useEffect(() => {
     if (!typeFromURL || !id) {
-        toast.error("Parameter tidak valid.");
-        router.push('/data/administrasi');
-        return;
+      toast.error("Parameter tidak valid.");
+      router.push('/data/administrasi');
+      return;
     }
 
     async function fetchData() {
@@ -92,25 +88,31 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
       try {
         const res = await fetch(`/api/administrasi?type=${typeFromURL}&id=${id}`)
         if (!res.ok) {
-            const errorData = await res.json();
-            throw new Error(errorData.error || "Gagal memuat data untuk diedit")
+          const errorData = await res.json();
+          throw new Error(errorData.error || "Gagal memuat data untuk diedit")
         }
 
         const data = await res.json()
 
         if (!data) {
-            throw new Error("Data tidak ditemukan.");
+          throw new Error("Data tidak ditemukan.");
         }
-        
+
         const initialFormState = {
           ...data,
           target: data.target?.toString() ?? "",
           realisasi: data.realisasi?.toString() ?? "",
-          status: data.status?.toString(), 
+          status: data.status?.toString(),
         };
 
         setForm(initialFormState);
         setType(typeFromURL)
+
+        // Init display formatting
+        if (typeFromURL === "komunikasi" && data.namaIndikator === "Scoring Publikasi") {
+          setDisplayTarget(formatIDR(initialFormState.target))
+          setDisplayRealisasi(formatIDR(initialFormState.realisasi))
+        }
       } catch (error: any) {
         toast.error(error.message || "Gagal memuat data.");
         router.push(`/data/administrasi?type=${typeFromURL || 'komunikasi'}`)
@@ -130,51 +132,51 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
     if (!type || !form) return;
 
     try {
-        let payload: any;
+      let payload: any;
 
-        switch (type) {
-          case "komunikasi":
-            payload = {
-              tahun: form.tahun,
-              bulan: form.bulan,
-              namaIndikator: form.namaIndikator,
-              target: parseInt(form.target, 10) || 0,
-              realisasi: form.realisasi ? parseInt(form.realisasi, 10) : null,
-            };
-            break;
-          case "sertifikasi":
-            payload = {
-              tahun: form.tahun,
-              bulan: form.bulan,
-              nomor: form.nomor,
-              nama: form.nama,
-              status: form.status,
-              keterangan: form.keterangan,
-            };
-            break;
-          case "kepatuhan":
-            payload = {
-              tahun: form.tahun,
-              bulan: form.bulan,
-              indikator: form.indikator,
-              kategori: form.kategori,
-              target: parseInt(form.target, 10) || 0,
-              realisasi: form.realisasi ? parseInt(form.realisasi, 10) : null,
-              keterangan: form.keterangan || null,
-            };
-            break;
-          case "ocr":
-            payload = {
-              tahun: form.tahun,
-              semester: form.semester,
-              kategoriOCR: form.kategoriOCR,
-              target: parseInt(form.target, 10) || 0,
-              realisasi: form.realisasi ? parseInt(form.realisasi, 10) : null,
-            };
-            break;
-          default:
-            throw new Error("Tipe administrasi tidak valid");
-        }
+      switch (type) {
+        case "komunikasi":
+          payload = {
+            tahun: form.tahun,
+            bulan: form.bulan,
+            namaIndikator: form.namaIndikator,
+            target: parseInt(form.target, 10) || 0,
+            realisasi: form.realisasi ? parseInt(form.realisasi, 10) : null,
+          };
+          break;
+        case "sertifikasi":
+          payload = {
+            tahun: form.tahun,
+            bulan: form.bulan,
+            nomor: form.nomor,
+            nama: form.nama,
+            status: form.status,
+            keterangan: form.keterangan,
+          };
+          break;
+        case "kepatuhan":
+          payload = {
+            tahun: form.tahun,
+            bulan: form.bulan,
+            indikator: form.indikator,
+            kategori: form.kategori,
+            target: parseInt(form.target, 10) || 0,
+            realisasi: form.realisasi ? parseInt(form.realisasi, 10) : null,
+            keterangan: form.keterangan || null,
+          };
+          break;
+        case "ocr":
+          payload = {
+            tahun: form.tahun,
+            semester: form.semester,
+            kategoriOCR: form.kategoriOCR,
+            target: parseInt(form.target, 10) || 0,
+            realisasi: form.realisasi ? parseInt(form.realisasi, 10) : null,
+          };
+          break;
+        default:
+          throw new Error("Tipe administrasi tidak valid");
+      }
 
       const res = await fetch(`/api/administrasi?type=${type}&id=${id}`, {
         method: "PUT",
@@ -183,46 +185,45 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
       })
 
       if (!res.ok) {
-          const errorData = await res.json();
-          throw new Error(errorData.error || "Gagal memperbarui data")
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Gagal memperbarui data")
       }
 
       toast.success("Data berhasil diperbarui")
       router.push(`/data/administrasi?type=${type}`)
-      router.refresh(); 
+      router.refresh();
     } catch (error: any) {
       toast.error(error.message || "Terjadi kesalahan saat menyimpan.")
     }
   }
 
-  if (isLoading) {
-    return (
-      <SidebarProvider>
-        <AppSidebar variant="inset" />
-        <SidebarInset>
-          <SiteHeader />
-          <div className="max-w-[100rem] md:mx-auto px-4 py-6 space-y-6 md:px-6">
-            <h1 className="text-2xl font-semibold">Edit Data Administrasi</h1>
-            <EditFormSkeleton />
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    )
-  }
-  if (!form || !type) {
-    return (
-      <SidebarProvider>
-        <AppSidebar variant="inset" />
-        <SidebarInset>
-          <SiteHeader />
-          <div className="max-w-[90rem] md:mx-auto px-4 py-6 space-y-6 md:px-6">
-            <h1 className="text-2xl font-semibold">Edit Data Administrasi</h1>
-            <p className="text-red-500">Data tidak ditemukan atau tidak valid.</p>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    )
-  }
+if (isLoading) { 
+  return ( 
+  <SidebarProvider> 
+    <AppSidebar variant="inset" /> 
+    <SidebarInset> 
+      <SiteHeader /> 
+      <div className="max-w-[100rem] md:mx-auto px-4 py-6 space-y-6 md:px-6"> 
+        <h1 className="text-2xl font-semibold">Edit Data Administrasi</h1> 
+        <EditFormSkeleton /> 
+      </div> 
+    </SidebarInset> 
+  </SidebarProvider> ) 
+    } 
+
+if (!form || !type) { 
+  return ( 
+  <SidebarProvider>
+    <AppSidebar variant="inset" /> 
+    <SidebarInset> 
+      <SiteHeader /> 
+      <div className="max-w-[90rem] md:mx-auto px-4 py-6 space-y-6 md:px-6"> 
+        <h1 className="text-2xl font-semibold">Edit Data Administrasi</h1> 
+        <p className="text-red-500">Data tidak ditemukan atau tidak valid.</p> 
+      </div> 
+    </SidebarInset> 
+  </SidebarProvider> ) }
+
   return (
     <SidebarProvider>
       <AppSidebar variant="inset" />
@@ -230,59 +231,89 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
         <SiteHeader />
         <div className="max-w-[90rem] md:mx-auto px-4 py-6 space-y-6 md:px-6">
           <h1 className="text-2xl font-semibold">Edit Data Administrasi: {type.charAt(0).toUpperCase() + type.slice(1)}</h1>
-
           <Card className="w-full p-4 shadow-sm border rounded-lg sm:p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Common Fields */}
-                <div className="w-full">
-                    <Label className="mb-1 block">Tahun</Label>
-                    <Input className="w-full" type="number" value={form.tahun} onChange={(e) => handleChange("tahun", e.target.value)} />
-                </div>
-                
-                {type !== 'ocr' ? (
-                    <div className="w-full">
-                        <Label className="mb-1 block">Bulan</Label>
-                        <Select value={form.bulan} onValueChange={(val) => handleChange("bulan", val)}>
-                            <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Bulan" /></SelectTrigger>
-                            <SelectContent>
-                            {["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"].map(b => <SelectItem key={b} value={b}>{getMonthName(b)}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                ) : (
-                    <div className="w-full">
-                        <Label className="mb-1 block">Semester</Label>
-                        <Select value={form.semester} onValueChange={(val) => handleChange("semester", val)}>
-                            <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Semester" /></SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="1">Semester 1</SelectItem>
-                                <SelectItem value="2">Semester 2</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                )}
+              <div className="w-full">
+                <Label className="mb-1 block">Tahun</Label>
+                <Input className="w-full" type="number" value={form.tahun} onChange={(e) => handleChange("tahun", e.target.value)} />
+              </div>
 
-                {type === 'komunikasi' && (
-                    <>
-                        <div className="md:col-span-2">
-                            <Label className="mb-1 block">Nama Indikator</Label>
-                            <Select value={form.namaIndikator} onValueChange={(val) => handleChange("namaIndikator", val)}>
-                                <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Indikator" /></SelectTrigger>
-                                <SelectContent>
-                                    {INDIKATOR_KOMUNIKASI_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="w-full">
-                            <Label className="mb-1 block">Target</Label>
-                            <Input className="w-full" type="number" value={form.target} onChange={(e) => handleChange("target", e.target.value)} />
-                        </div>
-                        <div className="w-full">
-                            <Label className="mb-1 block">Realisasi</Label>
-                            <Input className="w-full" type="number" value={form.realisasi} onChange={(e) => handleChange("realisasi", e.target.value)} />
-                        </div>
-                    </>
-                )}
+              {type !== 'ocr' ? (
+                <div className="w-full">
+                  <Label className="mb-1 block">Bulan</Label>
+                  <Select value={form.bulan} onValueChange={(val) => handleChange("bulan", val)}>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Bulan" /></SelectTrigger>
+                    <SelectContent>
+                      {["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"].map(b => (
+                        <SelectItem key={b} value={b}>{getMonthName(b)}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div className="w-full">
+                  <Label className="mb-1 block">Semester</Label>
+                  <Select value={form.semester} onValueChange={(val) => handleChange("semester", val)}>
+                    <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Semester" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">Semester 1</SelectItem>
+                      <SelectItem value="2">Semester 2</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {type === 'komunikasi' && (
+                <>
+                  <div className="md:col-span-2">
+                    <Label className="mb-1 block">Nama Indikator</Label>
+                    <Select value={form.namaIndikator} onValueChange={(val) => {
+                      handleChange("namaIndikator", val);
+                      if (val === "Scoring Publikasi") {
+                        setDisplayTarget(formatIDR(form.target))
+                        setDisplayRealisasi(formatIDR(form.realisasi))
+                      }
+                    }}>
+                      <SelectTrigger className="w-full"><SelectValue placeholder="Pilih Indikator" /></SelectTrigger>
+                      <SelectContent>
+                        {INDIKATOR_KOMUNIKASI_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="w-full">
+                    <Label className="mb-1 block">Target</Label>
+                    {form.namaIndikator === "Scoring Publikasi" ? (
+                      <Input
+                        value={displayTarget}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, "");
+                          setDisplayTarget(formatIDR(raw))
+                          handleChange("target", raw)
+                        }}
+                      />
+                    ) : (
+                      <Input type="number" value={form.target} onChange={(e) => handleChange("target", e.target.value)} />
+                    )}
+                  </div>
+
+                  <div className="w-full">
+                    <Label className="mb-1 block">Realisasi</Label>
+                    {form.namaIndikator === "Scoring Publikasi" ? (
+                      <Input
+                        value={displayRealisasi}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/\D/g, "");
+                          setDisplayRealisasi(formatIDR(raw))
+                          handleChange("realisasi", raw)
+                        }}
+                      />
+                    ) : (
+                      <Input type="number" value={form.realisasi} onChange={(e) => handleChange("realisasi", e.target.value)} />
+                    )}
+                  </div>
+                </>
+              )}
 
                 {type === 'sertifikasi' && (
                     <>
