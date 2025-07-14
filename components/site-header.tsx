@@ -28,7 +28,7 @@ const dashboardOptions = [
   { label: "Keuangan", value: "/dashboard/keuangan" },
 ];
 
-const tahunList = ["2023", "2024", "2025", "2026", "2027", "2028", "2029", "2030"];
+const tahunList = ["2022", "2023", "2024", "2025", "2026", "2027", "2028", "2029", "2030"];
 
 export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
   const router = useRouter();
@@ -93,7 +93,7 @@ export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
                     px-3 py-1.5
                     text-base font-semibold
                     transition-all duration-200
-                    data-[state=active]:bg-sky-400
+                    data-[state=active]:bg-sky-500
                     data-[state=active]:text-white
                     data-[state=active]:scale-95
                     data-[state=active]:shadow-md
@@ -129,18 +129,6 @@ export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
               </SelectContent>
             </Select>
           )}
-
-          {/* Github button */}
-          <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
-            <a
-              href="https://github.com/shadcn-ui/ui/tree/main/apps/v4/app/(examples)/dashboard"
-              rel="noopener noreferrer"
-              target="_blank"
-              className="dark:text-foreground cursor-pointer"
-            >
-              GitHub
-            </a>
-          </Button>
         </div>
       </div>
     </header>

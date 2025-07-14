@@ -325,7 +325,7 @@ export default function EditKeuanganPage(props: { params: Promise<{ id: string }
             >
               Kembali
             </Button>
-            <Button className="w-full bg-sky-400 hover:bg-sky-600 sm:w-auto cursor-pointer" onClick={handleSubmit}>
+            <Button className="w-full bg-sky-400 hover:bg-sky-500 sm:w-auto cursor-pointer" onClick={handleSubmit}>
               Simpan Perubahan
             </Button>
           </div>

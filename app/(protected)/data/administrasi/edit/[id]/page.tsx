@@ -278,7 +278,7 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
                             <Input className="w-full" type="number" value={form.target} onChange={(e) => handleChange("target", e.target.value)} />
                         </div>
                         <div className="w-full">
-                            <Label className="mb-1 block">Realisasi (Opsional)</Label>
+                            <Label className="mb-1 block">Realisasi</Label>
                             <Input className="w-full" type="number" value={form.realisasi} onChange={(e) => handleChange("realisasi", e.target.value)} />
                         </div>
                     </>
@@ -326,11 +326,11 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
                             <Input className="w-full" type="number" value={form.target} onChange={(e) => handleChange("target", e.target.value)} />
                         </div>
                         <div className="w-full">
-                            <Label className="mb-1 block">Realisasi (Opsional)</Label>
+                            <Label className="mb-1 block">Realisasi</Label>
                             <Input className="w-full" type="number" value={form.realisasi} onChange={(e) => handleChange("realisasi", e.target.value)} />
                         </div>
                          <div className="md:col-span-2">
-                            <Label className="mb-1 block">Keterangan (Opsional)</Label>
+                            <Label className="mb-1 block">Keterangan</Label>
                             <Input className="w-full" value={form.keterangan} onChange={(e) => handleChange("keterangan", e.target.value)} />
                         </div>
                     </>
@@ -352,7 +352,7 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
                       <Input type="number" value={form.target} onChange={(e) => handleChange("target", e.target.value)} placeholder="Jumlah Target" className="w-full"/>
                     </div>
                     <div className="w-full">
-                      <Label className="mb-1 block">Realisasi (Opsional)</Label>
+                      <Label className="mb-1 block">Realisasi</Label>
                       <Input type="number" value={form.realisasi} onChange={(e) => handleChange("realisasi", e.target.value)} placeholder="Jumlah Realisasi" className="w-full"/>
                     </div>
                   </>
@@ -364,7 +364,7 @@ export default function EditAdministrasiPage({ params }: { params: Promise<{ id:
             <Button variant="secondary" onClick={() => router.push(`/data/administrasi?type=${type}`)}>
               Kembali
             </Button>
-            <Button onClick={handleSubmit}>
+            <Button className="bg-sky-500 hover:bg-sky-600" onClick={handleSubmit}>
               Simpan Perubahan
             </Button>
           </div>

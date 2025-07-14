@@ -1,4 +1,5 @@
 "use client";
+import * as React from "react"
 import { useState, useEffect, useMemo } from "react";
 import {
   Select,
@@ -8,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { RadialBarChart, RadialBar, PolarRadiusAxis, Label } from "recharts";
 import {
   Card,
@@ -57,8 +58,16 @@ function formatPersen(value: number) {
   return `${value.toFixed(0)}`;
 }
 
+const getInitialMonth = (tahun: string) => {
+  const now = new Date();
+  if (tahun === String(now.getFullYear())) {
+      return String(now.getMonth() + 1).padStart(2, '0');
+  }
+  return "01";
+};
+
 export function SertifikasiChart({ tahun }: { tahun: string }) {
-  const [bulan, setBulan] = useState("01");
+  const [bulan, setBulan] = React.useState<string>(() => getInitialMonth(tahun));
   const [sertifikatData, setSertifikatData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true); // Loading state for the chart
   const [isAllZero, setIsAllZero] = useState(false); // Flag to check if all data is zero
@@ -132,11 +141,10 @@ export function SertifikasiChart({ tahun }: { tahun: string }) {
           </Select>
         </CardHeader>
         <CardContent className="flex justify-center items-center h-[220px] lg:h-[450px]">
-          <span className="text-muted-foreground text-sm text-center">
-            Belum ada data untuk bulan{" "}
-            <span className="font-semibold text-foreground">{bulanMapping[bulan]}</span> tahun{" "}
-            <span className="font-semibold text-foreground">{tahun}</span> .
-          </span>
+          <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+            <AlertCircle className="w-4 h-4 me-3" />
+              <span>Belum ada data untuk periode {bulanMapping[bulan]} - {tahun}</span>
+          </div>
         </CardContent>
       </Card>
     );
@@ -216,7 +224,7 @@ export function SertifikasiChart({ tahun }: { tahun: string }) {
         </div>
         {/* Radial Chart */}
         <div className="flex flex-col items-center justify-center w-full h-full">
-          <div className="font-semibold text-base mb-2">Progress Sertifikasi</div>
+          <div className="font-semibold text-base mb-6">Progress Sertifikasi</div>
           <RadialBarChart
             width={320}
             height={300}
@@ -227,6 +235,7 @@ export function SertifikasiChart({ tahun }: { tahun: string }) {
             data={[{ name: "Sertifikat", Target: 100, Realisasi: Math.round((progressValue / targetValue) * 100) }]}
             margin={{ top: 0, bottom: 0, left: 0, right: 0 }}
             style={{ overflow: "visible" }}
+            barSize={45}
           >
             <PolarRadiusAxis type="number" domain={[0, 100]} tick={false} axisLine={false} tickLine={false}>
               <Label
@@ -266,12 +275,14 @@ export function SertifikasiChart({ tahun }: { tahun: string }) {
                     );
                   }
                   return null;
-                }}
+                } 
+              }
               />
             </PolarRadiusAxis>
-            <RadialBar dataKey="Realisasi" fill="#0284c7" stackId="a" cornerRadius={3} />
-            <RadialBar dataKey="Target" fill="#bae6fd" stackId="a" cornerRadius={3} />
+            <RadialBar dataKey="Realisasi" fill="#0ea5e9" stackId="a" cornerRadius={6} />
+            <RadialBar dataKey="Target" fill="#bae6fd" stackId="a" cornerRadius={6} />
           </RadialBarChart>
+
         </div>
       </div>
     </div>

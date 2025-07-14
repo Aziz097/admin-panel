@@ -482,7 +482,7 @@ export function DataTable() {
             </DropdownMenuContent>
           </DropdownMenu>
           <Button
-            className="cursor-pointer"
+            className="cursor-pointer bg-sky-500 text-white hover:bg-sky-600 hover:text-white dark:bg-sky-600 dark:hover:bg-sky-700"
             variant="outline"
             size="sm"
             onClick={() => router.push(`/data/keuangan/create?type=${type}`)}

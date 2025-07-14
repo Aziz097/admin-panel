@@ -13,6 +13,7 @@ import {
   VisibilityState,
   RowSelectionState,
 } from '@tanstack/react-table';
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogTrigger,
@@ -80,7 +81,7 @@ const INDIKATOR_KOMUNIKASI_OPTIONS = [
   "Release Berita", "Konten Foto", "Akun Influencer Aktif",
   "Share Berita Internal", "Scoring Publikasi", "Laporan Permintaan Publik",
 ];
-const KATEGORI_OCR_OPTIONS = ["Kategori A", "Kategori B", "Kategori C"];
+const KATEGORI_OCR_OPTIONS = ["KC", "COP", "KP", "Inovasi"];
 
 export function DataTable() {
   const searchParams = useSearchParams();
@@ -285,16 +286,15 @@ export function DataTable() {
           return;
         }
 
-        // Optimistically remove from UI
         setData(prev => prev.filter(d => d.id !== id));
 
         try {
           const res = await fetch(`/api/administrasi?type=${type}&id=${id}`, { method: 'DELETE' });
           if (!res.ok) throw new Error("Gagal menghapus data.");
           toast.success('Data berhasil dihapus.');
+          router.refresh()
         } catch (err) {
           toast.error('Gagal menghapus data.');
-          // Rollback on error
           fetchData();
         } finally {
           setOpen(false);
@@ -322,10 +322,10 @@ export function DataTable() {
               {item.type === 'tjsl' && (
                 <>
                   <DropdownMenuItem className="cursor-pointer" onSelect={() => handleUpdateTjslStatus(item, true)}>
-                    Tandai Sudah Ikut
+                    Tandai Sudah
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer" onSelect={() => handleUpdateTjslStatus(item, false)}>
-                    Tandai Belum Ikut
+                    Tandai Belum
                   </DropdownMenuItem>
                 </>
               )}
@@ -394,7 +394,7 @@ export function DataTable() {
               ) : (
                 <XCircle className="w-4 h-4 text-red-500" />
               )}
-              {status ? "Sudah Ikut" : "Belum Ikut"}
+              {status ? "Sudah" : "Belum"}
             </Badge>
           );
         }
@@ -481,9 +481,62 @@ export function DataTable() {
     return uniqueYears.sort((a, b) => Number(b) - Number(a));
   }, [allAvailableYears]);
 
+  if (isLoading) {
+    const currentColumns = columnsMap[type] || [];
+    return (
+        <div className="w-full flex-col gap-6 py-4 lg:py-6">
+            <div className="flex flex-wrap items-center justify-between gap-4 px-4 lg:px-6">
+                <div className="flex gap-2 flex-wrap items-center">
+                    <Skeleton className="h-9 w-[200px]" />
+                    <Skeleton className="h-9 w-[150px]" />
+                    {type !== 'tjsl' && type !== 'ocr' && <Skeleton className="h-9 w-[180px]" />}
+                    {type === 'tjsl' && <> <Skeleton className="h-9 w-[150px]" /> <Skeleton className="h-9 w-[150px]" /> <Skeleton className="h-9 w-[200px]" /> </>}
+                    {type === 'ocr' && <Skeleton className="h-9 w-[150px]" />}
+                </div>
+                <div className="flex items-center gap-2">
+                    <Skeleton className="h-9 w-[120px]" />
+                    <Skeleton className="h-9 w-[120px]" />
+                </div>
+            </div>
+            <div className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6 mt-4">
+                <div className="overflow-hidden rounded-lg border">
+                    <Table>
+                        <TableHeader className="bg-muted">
+                            <TableRow>
+                                {currentColumns.map((col, i) => <TableHead key={i}><Skeleton className="h-5 w-full" /></TableHead>)}
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {[...Array(pagination.pageSize)].map((_, rowIndex) => (
+                                <TableRow key={rowIndex}>
+                                    {currentColumns.map((_, colIndex) => (
+                                        <TableCell key={colIndex}><Skeleton className="h-5 w-full" /></TableCell>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+                <div className="flex items-center justify-between pt-4">
+                    <Skeleton className="h-5 w-40 hidden lg:flex" />
+                    <div className="flex w-full items-center gap-8 lg:w-fit">
+                        <Skeleton className="h-9 w-44 hidden lg:flex" />
+                        <Skeleton className="h-5 w-28" />
+                        <div className="ml-auto flex items-center gap-2 lg:ml-0">
+                            <Skeleton className="h-8 w-8 hidden lg:flex" />
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8 hidden lg:flex" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
   return (
     <div className="w-full flex-col gap-6 py-4 lg:py-6">
-      {/* --- Header & Filters --- */}
       <div className="flex flex-wrap items-center justify-between gap-4 px-4 lg:px-6">
         <div className="flex gap-2 flex-wrap items-center">
           <Select value={type} onValueChange={(val) => {
@@ -495,7 +548,7 @@ export function DataTable() {
             }
             router.replace(`/data/administrasi?type=${newType}`);
           }}>
-            <SelectTrigger className="w-[150px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-[200px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm"><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="komunikasi">Komunikasi</SelectItem>
               <SelectItem value="sertifikasi">Sertifikasi Tanah</SelectItem>
@@ -511,28 +564,51 @@ export function DataTable() {
               {yearDropdownOptions.map((year) => <SelectItem key={year} value={year}>{year}</SelectItem>)}
             </SelectContent>
           </Select>
+          {type === 'komunikasi' && (
+            <Select value={selectedIndikator} onValueChange={setSelectedIndikator}>
+              <SelectTrigger className="w-[225px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm"><SelectValue placeholder="Pilih Indikator" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Indikator</SelectItem>
+                {INDIKATOR_KOMUNIKASI_OPTIONS.map((indikator) => (
+                  <SelectItem key={indikator} value={indikator}>{indikator}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+
+          {type === 'ocr' && (
+            <Select value={selectedKategoriOcr} onValueChange={setSelectedKategoriOcr}>
+              <SelectTrigger className="w-[150px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm"><SelectValue placeholder="Pilih Kategori OCR" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Kategori</SelectItem>
+                {KATEGORI_OCR_OPTIONS.map((kategori) => (
+                  <SelectItem key={kategori} value={kategori}>{kategori}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           {type === 'tjsl' && (
             <>
               <Select value={selectedSemester} onValueChange={setSelectedSemester}>
-                <SelectTrigger className="w-[150px]" size="sm"><SelectValue placeholder="Pilih Semester" /></SelectTrigger>
+                <SelectTrigger className="w-[150px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm"><SelectValue placeholder="Pilih Semester" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="1">Semester 1</SelectItem>
                   <SelectItem value="2">Semester 2</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={selectedTjslStatus} onValueChange={setSelectedTjslStatus}>
-                <SelectTrigger className="w-[150px]" size="sm"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
+                <SelectTrigger className="w-[150px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" size="sm"><SelectValue placeholder="Pilih Status" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="true">Sudah Ikut</SelectItem>
-                  <SelectItem value="false">Belum Ikut</SelectItem>
+                  <SelectItem value="true">Sudah</SelectItem>
+                  <SelectItem value="false">Belum</SelectItem>
                 </SelectContent>
               </Select>
               <Input
                 placeholder="Cari nama atau nip..."
                 value={globalFilter ?? ''}
                 onChange={(event) => setGlobalFilter(event.target.value)}
-                className="h-9 w-[150px] lg:w-[200px]"
+                className="h-9 w-[150px] lg:w-[200px] cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold"
               />
             </>
           )}
@@ -561,13 +637,13 @@ export function DataTable() {
             </Dialog>
           )}
           {type === 'tjsl' && bulkActionState === 'setSudah' && (
-            <Button size="sm" variant="outline" onClick={() => handleBulkUpdateTjslStatus(true)}>
-              <Check className="h-4 w-4 mr-2" /> Tandai Sudah Semua
+            <Button className="hover:bg-green-600 hover:text-amber-50" size="sm" variant="outline" onClick={() => handleBulkUpdateTjslStatus(true)}>
+              <Check className="h-4 w-4 mr-1" /> Tandai Sudah Semua
             </Button>
           )}
           {type === 'tjsl' && bulkActionState === 'setBelum' && (
-            <Button size="sm" variant="outline" onClick={() => handleBulkUpdateTjslStatus(false)}>
-              <CircleX className="h-4 w-4 mr-2" /> Tandai Belum Semua
+            <Button className="hover:bg-red-600 hover:text-amber-50" size="sm" variant="outline" onClick={() => handleBulkUpdateTjslStatus(false)}>
+              <CircleX className="h-4 w-4 mr-1" /> Tandai Belum Semua
             </Button>
           )}
           <DropdownMenu>
@@ -585,12 +661,12 @@ export function DataTable() {
           {type === 'tjsl' ? (
             <Dialog open={isGenerateDialogOpen} onOpenChange={setGenerateDialogOpen}>
               <DialogTrigger asChild>
-                <Button size="sm"><IconPlus className="h-4 w-4 mr-2" />Generate</Button>
+                <Button className="bg-sky-500 hover:bg-sky-600" size="sm"><IconPlus className="h-4 w-4 mr-1" />Generate</Button>
               </DialogTrigger>
               <GenerateTjslDialog onGenerate={handleGenerateTjsl} onOpenChange={setGenerateDialogOpen} />
             </Dialog>
           ) : (
-            <Button size="sm" variant="outline" onClick={() => router.push(`/data/administrasi/create?type=${type}`)}><IconPlus className="h-4 w-4 mr-2" /><span className="hidden lg:inline">Tambah Data</span></Button>
+            <Button className="bg-sky-500 hover:bg-sky-600" size="sm" variant="default" onClick={() => router.push(`/data/administrasi/create?type=${type}`)}><IconPlus className="h-4 w-4 mr-1" /><span className="hidden lg:inline">Tambah Data</span></Button>
           )}
         </div>
       </div>

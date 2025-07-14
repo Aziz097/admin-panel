@@ -62,8 +62,8 @@ export function NavUser() {
         {status === "loading" ? null : !user ? (
           <SidebarMenuButton
             onClick={handleLogin}
-            size="lg"
-            className="cursor-pointer justify-center font-semibold bg-sky-400 text-white hover:bg-sky-600 hover:text-white transition-colors duration-200"
+            size="default"
+            className="cursor-pointer justify-center font-semibold bg-sky-500 text-white hover:bg-sky-600 hover:text-white transition-colors duration-200"
           >
             <IconLogin />
             <span>Login</span>

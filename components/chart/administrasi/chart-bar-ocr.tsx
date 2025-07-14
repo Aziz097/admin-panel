@@ -7,7 +7,7 @@ import { ChartConfig, ChartContainer } from "@/components/ui/chart"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { toast } from "sonner"
-import { Loader2 } from "lucide-react"
+import { Loader2, AlertCircle } from "lucide-react"
 
 // --- Type Definitions ---
 type SemesterFilter = "Semester 1" | "Semester 2" | "Akumulasi"
@@ -26,6 +26,21 @@ type ChartDataPoint = {
     RealisasiComplete: number
     Sisa?: number
 }
+
+const bulanMapping: Record<string, string> = {
+    "01": "Januari",
+    "02": "Februari",
+    "03": "Maret",
+    "04": "April",
+    "05": "Mei",
+    "06": "Juni",
+    "07": "Juli",
+    "08": "Agustus",
+    "09": "September",
+    "10": "Oktober",
+    "11": "November",
+    "12": "Desember",
+  };
 
 const KATEGORI_OCR_OPTIONS = ["KC", "COP", "KP", "Inovasi"];
 
@@ -133,7 +148,8 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
                 <div className="h-[400px] w-[full]">
                     {isDataEmpty ? (
                         <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                            Tidak ada data untuk periode ini.
+                            <AlertCircle className="w-4 h-4 me-3" />
+                            <span>Belum ada data untuk periode {semester} - {tahun}</span>
                         </div>
                     ) : (
                         <ResponsiveContainer width="100%" height="100%">
@@ -181,8 +197,8 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
                                     }}
                                 />
                                 <Bar dataKey="RealisasiPartial" name="Realisasi" stackId="a" fill="#0ea5e9" barSize={80} />
-                                <Bar dataKey="RealisasiComplete" name="Realisasi" stackId="a" fill="#0ea5e9" radius={[10, 10, 0, 0]} barSize={80} />
-                                <Bar dataKey="Sisa" name="Sisa" stackId="a" fill="#bae6fd" radius={[10, 10, 0, 0]} barSize={80} />
+                                <Bar dataKey="RealisasiComplete" name="Realisasi" stackId="a" fill="#0ea5e9" radius={[8, 8, 0, 0]} barSize={80} />
+                                <Bar dataKey="Sisa" name="Sisa" stackId="a" fill="#bae6fd" radius={[8, 8, 0, 0]} barSize={80} />
                             </BarChart>
 
                         </ResponsiveContainer>

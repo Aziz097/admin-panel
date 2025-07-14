@@ -211,7 +211,7 @@ export default function EditPegawaiPage({ params }: { params: Promise<{ id: stri
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-sky-500 hover:bg-sky-600"
+                className="bg-sky-500 hover:bg-sky-500"
               >
                 {isSubmitting ? (
                   <>

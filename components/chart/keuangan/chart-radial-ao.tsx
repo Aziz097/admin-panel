@@ -251,7 +251,7 @@ export function ChartRadialAO({ tahun }: { tahun: string }) {
             </PolarRadiusAxis>
             <RadialBar
               dataKey="Realisasi"
-              fill="rgb(37, 99, 235)"
+              fill="var(--color-sky-500)"
               stackId="a"
               cornerRadius={5}
               className="stroke-transparent stroke-2"
@@ -260,7 +260,7 @@ export function ChartRadialAO({ tahun }: { tahun: string }) {
               dataKey="Target"
               stackId="a"
               cornerRadius={5}
-              fill="rgb(186, 230, 253)"
+              fill="var(--color-sky-200)"
               className="stroke-transparent stroke-2"
             />
           </RadialBarChart>
@@ -269,7 +269,7 @@ export function ChartRadialAO({ tahun }: { tahun: string }) {
 
       <CardFooter className="mt-[-80px] justify-center gap-4 pt-3 text-sm text-muted-foreground flex-wrap">
         <div className="flex items-center gap-1">
-          <span className="inline-block size-3 rounded-sm bg-sky-600" />
+          <span className="inline-block size-3 rounded-sm bg-sky-500" />
           <span>Realisasi :</span>
           <AnimatePresence mode="wait">
             <motion.span

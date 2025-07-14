@@ -33,11 +33,11 @@ type BulanData = {
 const chartConfig: ChartConfig = {
   Realisasi: {
     label: "Realisasi",
-    color: "var(--chart-2)",
+    color: "var(--color-sky-500)",
   },
   Sisa: {
     label: "Sisa Target",
-    color: "var(--chart-1)",
+    color: "var(--color-sky-200)",
   },
 }
 
@@ -130,7 +130,7 @@ export function ChartBarStacked({ tahun }: { tahun: string }) {
       <Card>
         <CardHeader>
           <CardTitle>Disburse AKI</CardTitle>
-          <CardDescription>(Januari – Desember) - {tahun}</CardDescription>
+          <CardDescription>(Januari - Desember) - {tahun}</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center items-center h-[220px] lg:h-[450px]">
           <span className="text-muted-foreground text-sm text-center">
@@ -150,7 +150,7 @@ export function ChartBarStacked({ tahun }: { tahun: string }) {
     <Card>
       <CardHeader>
         <CardTitle>Disburse AKI</CardTitle>
-        <CardDescription>(Januari – Desember) - {tahun}</CardDescription>
+        <CardDescription>(Januari - Desember) - {tahun}</CardDescription>
       </CardHeader>
 
       <CardContent className="h-[220px] lg:h-[450px]">
@@ -178,14 +178,14 @@ export function ChartBarStacked({ tahun }: { tahun: string }) {
                   <div className="rounded-xl p-4 text-sm shadow-xl min-w-[220px] space-y-2 bg-white text-black">
                     <div className="flex items-center justify-between gap-2">
                       <span className="flex items-center gap-2">
-                        <span className="inline-block size-2 rounded-sm bg-neutral-400" />
+                        <span className="inline-block size-2 rounded-sm bg-sky-200" />
                         <span className="text-muted-foreground">Target</span>
                       </span>
                       <span className="font-medium tabular-nums">{formatRupiah(current.Target)}</span>
                     </div>
                     <div className="flex items-center justify-between gap-2">
                       <span className="flex items-center gap-2">
-                        <span className="inline-block size-2 rounded-sm bg-black" />
+                        <span className="inline-block size-2 rounded-sm bg-sky-500" />
                         <span className="text-muted-foreground">Realisasi</span>
                       </span>
                       <span className="font-medium tabular-nums">{formatRupiah(current.Realisasi)}</span>
@@ -201,14 +201,14 @@ export function ChartBarStacked({ tahun }: { tahun: string }) {
             <Bar
               dataKey="Realisasi"
               stackId="a"
-              fill="rgb(37, 99, 235)"
-              radius={[4, 4, 0, 0]}
+              fill="var(--color-sky-500)"
+              radius={[6, 6, 0, 0]}
             />
             <Bar
               dataKey="Sisa"
               stackId="a"
-              fill="rgb(186, 230, 253)"
-              radius={[4, 4, 0, 0]}
+              fill="var(--color-sky-200)"
+              radius={[6, 6, 0, 0]}
             />
           </BarChart>
         </ChartContainer>
@@ -216,7 +216,7 @@ export function ChartBarStacked({ tahun }: { tahun: string }) {
 
       <CardFooter className="justify-center gap-6 pt-4 text-sm text-muted-foreground flex-wrap">
         <div className="flex items-center gap-2">
-          <span className="inline-block w-3 h-3 rounded-sm bg-sky-600" />
+          <span className="inline-block w-3 h-3 rounded-sm bg-sky-500" />
           <span className="leading-none">Realisasi</span>
         </div>
         <div className="flex items-center gap-2">

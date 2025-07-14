@@ -13,6 +13,7 @@ import {
   ColumnFiltersState,
   VisibilityState,
 } from "@tanstack/react-table"
+import { Label } from "@/components/ui/label"
 import {
   Table,
   TableBody,
@@ -53,6 +54,13 @@ import {
   IconPlus,
   IconDotsVertical,
 } from "@tabler/icons-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 // Define the type for a Pegawai object, matching the Prisma schema
 export type Pegawai = {
@@ -68,7 +76,7 @@ const actionColumn = (
   openDeleteDialog: (rows: Pegawai[]) => void
 ): ColumnDef<Pegawai> => ({
   id: "actions",
-  header: () => <div className="text-right">Actions</div>,
+  header: () => <div className="text-right me-4">Aksi</div>,
   cell: ({ row }) => {
     const router = useRouter()
     const pegawai = row.original
@@ -321,10 +329,11 @@ export function PegawaiDataTable() {
             </DropdownMenuContent>
           </DropdownMenu>
           <Button
+            className="bg-sky-500 hover:bg-sky-600"
             size="sm"
             onClick={() => router.push("/data/pegawai/create")}
           >
-            <IconPlus className="mr-2 h-4 w-4" />
+            <IconPlus className="mr-1 h-4 w-4" />
             Tambah Data
           </Button>
         </div>
@@ -386,6 +395,25 @@ export function PegawaiDataTable() {
             {table.getFilteredSelectedRowModel().rows.length} dari{" "}
             {table.getFilteredRowModel().rows.length} baris terpilih.
          </div>
+         <div className="hidden items-center gap-2 lg:flex">
+              <Label htmlFor="rows-per-page" className="text-sm font-medium ">Baris per Halaman</Label>
+              <Select
+                value={`${table.getState().pagination.pageSize}`}
+                onValueChange={(val) => table.setPageSize(Number(val))}
+              >
+                <SelectTrigger size="sm" className="w-20 border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold" id="rows-per-page">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent side="top">
+                  {[10, 20, 30, 40, 50].map((n) => (
+                    <SelectItem key={n} value={`${n}`}>{n}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex w-fit items-center justify-center text-sm font-medium">
+              Halaman {table.getState().pagination.pageIndex + 1} dari {table.getPageCount()}
+            </div>
         <Button
           variant="outline"
           size="sm"

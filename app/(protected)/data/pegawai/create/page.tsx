@@ -196,7 +196,7 @@ export default function CreatePegawaiPage() {
                 + Tambah Baris
               </Button>
               <Button
-                className="w-full bg-sky-500 hover:bg-sky-600 sm:w-auto"
+                className="w-full bg-sky-500 hover:bg-sky-500 sm:w-auto"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
               >

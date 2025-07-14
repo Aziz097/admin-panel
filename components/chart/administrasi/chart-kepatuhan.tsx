@@ -1,354 +1,248 @@
-"use client";
-import { useState, useEffect, useMemo } from "react";
-import {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Loader2, AlertTriangle } from "lucide-react";
-import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card";
-import { ChartConfig, ChartContainer, ChartTooltip } from "@/components/ui/chart";
-import { Skeleton } from "@/components/ui/skeleton";
+"use client"
 
-// Mapping month numbers to full names
-const bulanMapping: Record<string, string> = {
-  "01": "Januari",
-  "02": "Februari",
-  "03": "Maret",
-  "04": "April",
-  "05": "Mei",
-  "06": "Juni",
-  "07": "Juli",
-  "08": "Agustus",
-  "09": "September",
-  "10": "Oktober",
-  "11": "November",
-  "12": "Desember",
-};
+import * as React from "react"
+import { Bar, BarChart, CartesianGrid, XAxis, Tooltip, ResponsiveContainer } from "recharts"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
+import { toast } from "sonner"
+import { Badge } from "@/components/ui/badge"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { CheckCircle, Loader2, AlertCircle } from "lucide-react"
 
-// Chart config
-const chartConfig: ChartConfig = {
-  realisasi: {
-    label: "Realisasi",
-    color: "rgb(37, 99, 235)",
-  },
-  sisa: {
-    label: "Sisa Target",
-    color: "rgb(186, 230, 253)",
-  },
-};
-
-
-function formatPersen(value: number) {
-  return `${value.toFixed(0)}`;
+// --- Type Definitions ---
+type KepatuhanApiData = {
+    id: number;
+    tahun: string;
+    bulan: string;
+    indikator: string;
+    kategori: string;
+    target: number;
+    realisasi: number | null;
+    keterangan: string | null;
 }
 
-// Month list for select dropdown
+type ChartDataPoint = {
+    month: string;
+    fullMonth: string;
+    Target: number;
+    OriginalRealisasi: number;
+    RealisasiPartial: number;
+    RealisasiComplete: number;
+    Sisa: number;
+}
+
+// --- Constants ---
+const bulanMapping: Record<string, string> = {
+    "01": "Januari", "02": "Februari", "03": "Maret", "04": "April",
+    "05": "Mei", "06": "Juni", "07": "Juli", "08": "Agustus",
+    "09": "September", "10": "Oktober", "11": "November", "12": "Desember",
+};
+
+// FIX: Ensure month keys are always sorted correctly.
+const MONTH_KEYS = Object.keys(bulanMapping).sort();
+
 const bulanList = Object.entries(bulanMapping)
-  .map(([value, label]) => ({ label, value }))
-  .sort((a, b) => parseInt(a.value) - parseInt(b.value)); // Sort by month value
+    .map(([value, label]) => ({ label, value }))
+    .sort((a, b) => parseInt(a.value) - parseInt(b.value));
 
+// --- Helper Functions ---
+const getInitialMonth = (tahun: string) => {
+    const now = new Date();
+    if (tahun === String(now.getFullYear())) {
+        return String(now.getMonth() + 1).padStart(2, '0');
+    }
+    return "01";
+};
+
+// --- Main Card Component ---
 export function KepatuhanChart({ tahun }: { tahun: string }) {
-  const [bulan, setBulan] = useState("01");
-  const [data, setData] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+    const [allDataForYear, setAllDataForYear] = React.useState<KepatuhanApiData[]>([]);
+    const [loading, setLoading] = React.useState(true);
+    const [selectedBulan, setSelectedBulan] = React.useState<string>(() => getInitialMonth(tahun));
 
-  // Fetch data on year change
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      const res = await fetch(`/api/administrasi?type=kepatuhan&tahun=${tahun}`);
-      const result = await res.json();
-      setData(result);
-      setIsLoading(false);
-    };
-    fetchData();
-  }, [tahun]);
+    // --- Data Fetching ---
+    React.useEffect(() => {
+        if (!tahun) return;
+        async function fetchData() {
+            setLoading(true);
+            try {
+                const res = await fetch(`/api/administrasi?type=kepatuhan&tahun=${tahun}`);
+                if (!res.ok) throw new Error("Gagal mengambil data Kepatuhan");
+                const json = await res.json();
+                setAllDataForYear(Array.isArray(json) ? json : []);
+            } catch (error) {
+                toast.error("Gagal memuat data Kepatuhan.");
+                console.error("Failed to fetch Kepatuhan data:", error);
+                setAllDataForYear([]);
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchData();
+    }, [tahun]);
 
-  // Prepare chart data
-  const chartData = useMemo(() => {
-    const months = Array.from({ length: 12 }, (_, i) =>
-      String(i + 1).padStart(2, "0")
-    );
-    const result = months.map((month) => ({
-      month,
-      target: 0,
-      realisasi: 0,
-      sisa: 0,
-    }));
+    // --- Data Processing for Chart ---
+    const chartData = React.useMemo<ChartDataPoint[]>(() => {
+        // Now MONTH_KEYS is guaranteed to be in order ["01", "02", ..., "12"]
+        return MONTH_KEYS.map(monthKey => {
+            const itemsForMonth = allDataForYear.filter(item => item.bulan === monthKey);
+            const totalTarget = itemsForMonth.reduce((sum, item) => sum + item.target, 0);
+            const totalRealisasi = itemsForMonth.reduce((sum, item) => sum + (item.realisasi || 0), 0);
+            
+            const isComplete = totalTarget > 0 && totalRealisasi >= totalTarget;
 
-    data.forEach((item) => {
-      const idx = months.findIndex((m) => m === item.bulan);
-      if (idx !== -1 && item.tahun === tahun) {
-        result[idx].target += item.target;
-        result[idx].realisasi += item.realisasi;
-        result[idx].sisa = result[idx].target - result[idx].realisasi;
-      }
-    });
+            return {
+                month: bulanMapping[monthKey].slice(0, 3), // "Jan", "Feb", etc.
+                fullMonth: bulanMapping[monthKey],
+                Target: totalTarget,
+                OriginalRealisasi: totalRealisasi,
+                RealisasiPartial: isComplete ? 0 : totalRealisasi,
+                RealisasiComplete: isComplete ? totalTarget : 0,
+                Sisa: isComplete ? 0 : Math.max(0, totalTarget - totalRealisasi),
+            };
+        });
+    }, [allDataForYear]);
 
-    return result;
-  }, [data, tahun]);
+    // --- Data for Table ---
+    const tableData = React.useMemo(() => {
+        return allDataForYear.filter(item => item.bulan === selectedBulan);
+    }, [allDataForYear, selectedBulan]);
 
-  const tableData = data.filter(
-    (item) => item.bulan === bulan && item.tahun === tahun
-  );
+    const isDataEmpty = chartData.every(d => d.Target === 0);
 
-  const isAllZero = chartData.every(
-    (d) => d.realisasi === 0 && d.sisa === 0
-  );
+    // --- Skeleton UI ---
+    if (loading) {
+        return (
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-7 w-1/3" />
+                    <Skeleton className="h-4 w-1/2 mt-2" />
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <Skeleton className="h-[350px] w-full" />
+                    <Skeleton className="h-[350px] w-full" />
+                </CardContent>
+            </Card>
+        );
+    }
 
-  // If all the data is zero, show the no data message
-  if (isAllZero && !isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-bold text-xl text-black">Kepatuhan</CardTitle>
-          <CardDescription className="text-md text-zinc-400">Rekap Indikator Kepatuhan {tahun}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center items-center h-[220px] lg:h-[450px]">
-          <span className="text-muted-foreground text-sm text-center">
-            Belum ada data untuk tahun{" "}
-            <span className="font-semibold text-foreground">{tahun}</span>.
-          </span>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <div className="w-full rounded-2xl border border-zinc-200 bg-white p-4 sm:p-6 shadow-sm">
-      <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between mb-6">
-        <div>
-          <div className="font-bold text-xl text-black">Kepatuhan</div>
-          <div className="text-md text-zinc-400">Rekap Indikator Kepatuhan - {tahun}</div>
-        </div>
-        <Select value={bulan} onValueChange={setBulan}>
-          <SelectTrigger className="w-full sm:w-[140px] h-9">
-            <SelectValue placeholder="Pilih Bulan" />
-          </SelectTrigger>
-          <SelectContent>
-            {bulanList.map((b) => (
-              <SelectItem key={b.value} value={b.value}>
-                {b.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Chart Section */}
-        <div className="w-full lg:w-1/2">
-          <Card className="rounded-2xl border border-zinc-200 bg-white shadow-none px-4 py-6">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg font-bold">
-                Capaian Kepatuhan Indikator
-              </CardTitle>
-              <CardDescription className="text-sm text-zinc-500">
-                Januari – Desember {tahun}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="h-[270px]">
-              {isLoading ? (
-                <div className="w-full h-full flex justify-center items-center">
-                  {/* Skeleton loader while data is being fetched */}
-                  <Loader2 className="animate-spin w-10 h-10 text-zinc-400" />
+        <Card>
+            <CardHeader>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
+                    <div>
+                        <CardTitle className="font-bold text-xl text-black">Kepatuhan</CardTitle>
+                        <CardDescription className="text-md text-zinc-400">Rekapitulasi Capaian Kepatuhan{tahun}</CardDescription>
+                    </div>
+                    <Select value={selectedBulan} onValueChange={setSelectedBulan}>
+                        <SelectTrigger className="w-full sm:w-[180px]">
+                            <SelectValue placeholder="Pilih Bulan" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {bulanList.map((b) => (<SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>))}
+                        </SelectContent>
+                    </Select>
                 </div>
-              ) : (
-                <ChartContainer config={chartConfig} className="h-full w-full">
-                  <BarChart data={chartData} barCategoryGap={"20%"}>
-                    <CartesianGrid vertical={false} />
-                    <XAxis
-                      dataKey="month"
-                      tickLine={false}
-                      tickMargin={10}
-                      axisLine={false}
-                      tickFormatter={(value) =>
-                        bulanMapping[value]?.slice(0, 3) || ""
-                      }
-                    />
-                    <ChartTooltip
-                      cursor={false}
-                      content={({ payload, label }) => {
-                        if (!payload?.length) return null;
-
-                        // Ensure label is defined and exists in mapping
-                        if (typeof label !== "string" || !bulanMapping[label])
-                          return null;
-
-                        const current = chartData.find(
-                          (d) => d.month === label
-                        );
-                        if (!current) return null;
-
-                        return (
-                          <div className="rounded-xl p-3 shadow-xl min-w-[170px] space-y-1 bg-white text-black border border-zinc-100">
-                            <div className="font-semibold text-base mb-1">
-                              {bulanMapping[label]}
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Chart Section */}
+                <div className="w-full">
+                    <h3 className="font-semibold mb-3">Grafik Capaian Kepatuhan</h3>
+                    <div className="h-[300px]">
+                        {isDataEmpty ? (
+                            <div className="flex h-full w-full items-center justify-center text-muted-foreground">Belum ada data untuk tahun {tahun}.</div>
+                        ) : (
+                            <div className="w-full h-full flex flex-col">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                                        {/* FIX: Add interval={0} to ensure all labels are shown */}
+                                        <XAxis dataKey="month" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} interval={0} />
+                                        <Tooltip
+                                            cursor={false}
+                                            content={({ payload, label }) => {
+                                                const current = chartData.find(d => d.month === label);
+                                                if (!current || current.Target === 0) return null;
+                                                const percentage = (current.OriginalRealisasi / current.Target) * 100;
+                                                return (
+                                                    <div className="rounded-lg border bg-background p-2 shadow-sm min-w-[200px]">
+                                                        <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                                                            <div className="flex items-center gap-2"><div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: "hsl(198.6 88.7% 48.4%)" }} /><p className="text-muted-foreground">Realisasi</p></div><p className="font-medium text-right">{current.OriginalRealisasi}</p>
+                                                            <div className="flex items-center gap-2"><div className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: "hsl(200.6 94.4% 86.1%)" }} /><p className="text-muted-foreground">Target</p></div><p className="font-medium text-right">{current.Target}</p>
+                                                            <div className="col-span-2 border-t mt-1 pt-1"><div className="flex items-center justify-between"><p className="text-muted-foreground">Capaian</p><p className="font-medium text-right">{percentage.toFixed(1)}%</p></div></div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            }}
+                                        />
+                                        <Bar dataKey="RealisasiPartial" name="Realisasi" stackId="a" fill="var(--color-sky-500)" />
+                                        <Bar dataKey="RealisasiComplete" name="Realisasi" stackId="a" fill="var(--color-sky-500)" radius={[4, 4, 0, 0]} />
+                                        <Bar dataKey="Sisa" name="Sisa" stackId="a" fill="var(--color-sky-200)" radius={[4, 4, 0, 0]} />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                                <CardFooter className="justify-center gap-6 pt-4 text-sm text-muted-foreground flex-wrap">
+                                    <div className="flex items-center gap-2"><div className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: 'var(--color-sky-500)' }} /><span>Realisasi</span></div>
+                                    <div className="flex items-center gap-2"><div className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: 'var(--color-sky-200)' }} /><span>Target</span></div>
+                                </CardFooter>
                             </div>
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="flex items-center gap-2">
-                                <span
-                                  className="inline-block size-2 rounded-sm"
-                                  style={{
-                                    backgroundColor: chartConfig.sisa.color,
-                                  }}
-                                />
-                                <span className="text-muted-foreground">
-                                  Target
-                                </span>
-                              </span>
-                              <span className="font-medium tabular-nums">
-                                {formatPersen(current.target)}
-                              </span>
-                            </div>
-                            <div className="flex items-center justify-between gap-2">
-                              <span className="flex items-center gap-2">
-                                <span
-                                  className="inline-block size-2 rounded-sm"
-                                  style={{
-                                    backgroundColor:
-                                      chartConfig.realisasi.color,
-                                  }}
-                                />
-                                <span className="text-muted-foreground">
-                                  Realisasi
-                                </span>
-                              </span>
-                              <span className="font-medium tabular-nums">
-                                {formatPersen(current.realisasi)}
-                              </span>
-                            </div>
-                          </div>
-                        );
-                      }}
-                    />
-                    <Bar
-                      dataKey="realisasi"
-                      stackId="a"
-                      fill={chartConfig.realisasi.color}
-                      radius={[4, 4, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="sisa"
-                      stackId="a"
-                      fill={chartConfig.sisa.color}
-                      radius={[4, 4, 0, 0]}
-                    />
-                  </BarChart>
-                </ChartContainer>
-              )}
+                        )}
+                    </div>
+                </div>
+
+                {/* Table Section */}
+                <div className="w-full">
+                    <h3 className="font-semibold mb-3">Rincian Indikator - {bulanMapping[selectedBulan]}</h3>
+                    <div className="rounded-lg border max-h-[350px] overflow-y-auto overflow-x-auto">
+                        <Table >
+                            <TableHeader className="bg-muted sticky top-0 z-10">
+                                <TableRow>
+                                    <TableHead className="p-2 pl-4 w-[30%]">Indikator</TableHead>
+                                    <TableHead className="p-2 w-[15%]">Eviden</TableHead>
+                                    <TableHead className="p-2 w-[15%]">Status</TableHead>
+                                    <TableHead className="p-2 w-[40%]">Keterangan</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {tableData.length === 0 ? (
+                                    <TableRow><TableCell colSpan={4} className="h-24 text-center text-muted-foreground">Belum ada data untuk periode {bulanMapping[selectedBulan]} - {tahun}.</TableCell></TableRow>
+                                ) : (
+                                    tableData.map((item) => {
+                                        let status = "Selesai";
+                                        let Icon = CheckCircle;
+                                        let iconColor = "text-green-500";
+                                        const realisasi = item.realisasi ?? 0;
+                                        const target = item.target;
+                                        if (realisasi < target) {
+                                            status = "Proses"; 
+                                            Icon = Loader2; 
+                                            iconColor = "text-yellow-500";
+                                        }
+                                        return (
+                                            <TableRow key={item.id}>
+                                                <TableCell className="font-medium align-top break-words">{item.indikator}</TableCell>
+                                                <TableCell className="align-top">{item.realisasi ?? 0} / {item.target}</TableCell>
+                                                <TableCell className="text-center align-top">
+                                                    <Badge variant="outline" className={`gap-1.5 ${status === "Selesai"
+                                                            ? "border-green-400"
+                                                            : status === "Proses"
+                                                            ? "border-yellow-400"
+                                                            : "border-zinc-300"
+                                                            }`}>
+                                                        <Icon className={`w-4 h-4 ${iconColor} ${status === "Proses" ? "animate-spin" : ""}`} />
+                                                        <span>{status}</span>
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-muted-foreground">{item.keterangan}</TableCell>
+                                            </TableRow>
+                                        );
+                                    })
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
             </CardContent>
-            <CardFooter className="justify-center gap-6 pt-4 pb-2 text-sm text-muted-foreground flex-wrap">
-              {chartData.some((data) => data.target > 0 || data.realisasi > 0) && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="inline-block w-3 h-3 rounded-sm"
-                      style={{ backgroundColor: chartConfig.realisasi.color }}
-                    />
-                    <span>Realisasi</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="inline-block w-3 h-3 rounded-sm"
-                      style={{ backgroundColor: chartConfig.sisa.color }}
-                    />
-                    <span>Sisa Target</span>
-                  </div>
-                </>
-              )}
-            </CardFooter>
-          </Card>
-        </div>
-
-        {/* Table Section */}
-        <div className="w-full lg:w-1/2">
-          <div className="font-semibold mb-3">
-            Daftar Indikator Kepatuhan {bulanMapping[bulan]} - {tahun}
-          </div>
-          <div className="overflow-x-auto rounded-lg border">
-            <div className="max-h-[382px] overflow-y-auto">
-              <table className="min-w-full text-sm">
-                <thead className="bg-muted text-zinc-700">
-                  <tr>
-                    <th className="p-2 text-left">Indikator</th>
-                    <th className="p-2 text-left">Kategori</th>
-                    <th className="p-2 text-left">Eviden</th>
-                    <th className="p-2 text-left">Status</th>
-                    <th className="p-2 text-left">Keterangan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tableData.length === 0 ? (
-                    <tr>
-                      <td colSpan={5} className="text-center py-3 text-zinc-400">
-                        Belum ada data
-                      </td>
-                    </tr>
-                  ) : (
-                    tableData.map((item, idx) => {
-                      let status = "Selesai";
-                      let color = "green-500";
-                      let Icon = CheckCircle;
-                      if (item.realisasi === 0) {
-                        status = "Belum";
-                        color = "zinc-400";
-                        Icon = AlertTriangle;
-                      } else if (item.realisasi < item.target) {
-                        status = "Proses";
-                        color = "yellow-500";
-                        Icon = Loader2;
-                      }
-                      return (
-                        <tr
-                          key={`${item.indikator}-${idx}`}
-                          className="border-b last:border-none"
-                        >
-                          <td className="p-2">{item.indikator}</td>
-                          <td className="p-2">{item.kategori || "-"}</td>
-                          <td className="p-2">
-                            {item.realisasi} / {item.target}
-                          </td>
-                          <td className="p-2">
-                            <Badge
-                              variant="outline"
-                              className={`text-muted-foreground px-1.5 gap-1 border-${color}`}
-                            >
-                              <Icon
-                                className={`w-4 h-4 ${
-                                  status === "Selesai"
-                                    ? "text-green-500"
-                                    : status === "Belum"
-                                    ? "text-zinc-400"
-                                    : "text-yellow-500"
-                                } ${status === "Proses" ? "animate-spin" : ""}`}
-                              />
-                              <span>{status}</span>
-                            </Badge>
-                          </td>
-                          <td className="p-2">{item.keterangan || "-"}</td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+        </Card>
+    );
 }

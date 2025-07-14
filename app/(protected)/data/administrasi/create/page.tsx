@@ -242,11 +242,11 @@ export default function CreateAdministrasiPage() {
                   <>
                     <div className="w-full">
                       <Label className="mb-1 block">Nomor</Label>
-                      <Input value={form.nomor} onChange={(e) => handleChange(index, "nomor", e.target.value)} placeholder="Nomor Sertifikasi" className="w-full"/>
+                      <Input value={form.nomor} onChange={(e) => handleChange(index, "nomor", e.target.value)} placeholder="Nomor Sertifikat" className="w-full"/>
                     </div>
                     <div className="w-full">
                       <Label className="mb-1 block">Nama</Label>
-                      <Input value={form.nama} onChange={(e) => handleChange(index, "nama", e.target.value)} placeholder="Nama Pemilik" className="w-full"/>
+                      <Input value={form.nama} onChange={(e) => handleChange(index, "nama", e.target.value)} placeholder="Nama Tower" className="w-full"/>
                     </div>
                      <div className="md:col-span-2">
                       <Label className="mb-1 block">Status</Label>
@@ -277,7 +277,7 @@ export default function CreateAdministrasiPage() {
                     </div>
                     <div className="w-full">
                         <Label className="mb-1 block">Target</Label>
-                        <Input type="number" value={form.target} onChange={(e) => handleChange(index, "target", e.target.value)} placeholder="Jumlah Target" className="w-full" />
+                        <Input type="number" value={form.target} onChange={(e) => handleChange(index, "target", e.target.value)} placeholder="Jumlah Eviden" className="w-full" />
                     </div>
                     <div className="w-full">
                         <Label className="mb-1 block">Realisasi</Label>
@@ -330,7 +330,7 @@ export default function CreateAdministrasiPage() {
             <Button variant="secondary" onClick={() => router.push(`/data/administrasi?type=${type}`)}>Kembali</Button>
             <div className="flex flex-col gap-3 sm:flex-row sm:gap-2">
               <Button variant="outline" onClick={addRow}>+ Tambah Baris</Button>
-              <Button onClick={handleSubmit}>Simpan</Button>
+              <Button className="bg-sky-500 hover:bg-sky-600" onClick={handleSubmit}>Simpan</Button>
             </div>
           </div>
         </div>

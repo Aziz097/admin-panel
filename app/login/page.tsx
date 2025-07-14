@@ -6,8 +6,8 @@ export default function LoginPage() {
       <div className="relative flex items-center justify-center p-6 md:p-10">
         <div className="absolute left-6 top-6 flex items-center gap-2 md:left-10 md:top-10">
         <img 
-            src="/bumn.png" 
-            alt="LOGO BUMN" 
+            src="/danantara.png" 
+            alt="Logo Danantara" 
             className="mr-4 max-h-6 object-contain"
           />
           <img
