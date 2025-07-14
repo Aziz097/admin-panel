@@ -70,7 +70,6 @@ export type Pegawai = {
   jabatan: string
 }
 
-// Reusable Action Column for Edit and Delete
 const actionColumn = (
   refetchData: () => void,
   openDeleteDialog: (rows: Pegawai[]) => void

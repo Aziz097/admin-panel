@@ -28,19 +28,53 @@ const dashboardOptions = [
   { label: "Keuangan", value: "/dashboard/keuangan" },
 ];
 
-const tahunList = ["2022", "2023", "2024", "2025", "2026", "2027", "2028", "2029", "2030"];
+// Menghapus array statis `tahunList`
 
 export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [isMounted, setIsMounted] = useState(false);
-
   const [dashboardTab, setDashboardTab] = useState<string>("");
+
+  // State untuk menyimpan daftar tahun dari API
+  const [tahunOptions, setTahunOptions] = useState<string[]>([]);
+  // State untuk loading
+  const [isLoadingTahun, setIsLoadingTahun] = useState(true);
+
 
   // Set mounted to true once the component is client-side
   useEffect(() => {
     setIsMounted(true);
   }, []);
+
+  // useEffect untuk mengambil data tahun saat komponen di-mount
+  useEffect(() => {
+    const fetchTahun = async () => {
+      try {
+        setIsLoadingTahun(true);
+        const response = await fetch('/api/tahun');
+        if (!response.ok) {
+          throw new Error('Gagal mengambil data tahun');
+        }
+        const data: string[] = await response.json();
+        setTahunOptions(data);
+
+        // Jika `setTahun` tersedia dan ada data tahun,
+        // atur tahun default ke yang terbaru jika belum ada atau tidak valid.
+        if (setTahun && data.length > 0 && (!tahun || !data.includes(tahun))) {
+          setTahun(data[0]); // `data[0]` adalah tahun terbaru karena API mengurutkannya
+        }
+      } catch (error) {
+        console.error("Error fetching 'tahun' data:", error);
+        setTahunOptions([]); // Set ke array kosong jika gagal
+      } finally {
+        setIsLoadingTahun(false);
+      }
+    };
+
+    fetchTahun();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setTahun]); // Menambahkan setTahun sebagai dependensi
 
   // Set dashboard tab on client mount
   useEffect(() => {
@@ -57,7 +91,7 @@ export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
   }
 
   return (
-    <header className="flex h-(--header-height) shrink-0 items-center border-b transition-[width,height] ease-linear px-2 sm:px-4">
+    <header className="flex h-[var(--header-height)] shrink-0 items-center border-b transition-[width,height] ease-linear px-2 sm:px-4">
       <div className="flex w-full items-center gap-1 lg:gap-2">
         <SidebarTrigger className="-ml-1 cursor-pointer" />
         <Separator orientation="vertical" className="mx-2 hidden sm:block data-[orientation=vertical]:h-4" />
@@ -114,14 +148,15 @@ export function SiteHeader({ tahun, setTahun }: SiteHeaderProps) {
         )}
 
         <div className="ml-auto flex items-center gap-2">
-          {/* Select Tahun */}
+          {/* Select Tahun (diperbarui) */}
           {tahun && setTahun && (
-            <Select value={tahun} onValueChange={(val) => setTahun(val)}>
+            <Select value={tahun} onValueChange={(val) => setTahun(val)} disabled={isLoadingTahun || tahunOptions.length === 0}>
               <SelectTrigger className="w-[100px] h-9 cursor-pointer border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 font-semibold">
-                <SelectValue placeholder="Tahun" />
+                <SelectValue placeholder={isLoadingTahun ? "Memuat..." : "Tahun"} />
               </SelectTrigger>
               <SelectContent>
-                {tahunList.map((year) => (
+                {/* Mapping dari state `tahunOptions` */}
+                {tahunOptions.map((year) => (
                   <SelectItem key={year} value={year}>
                     {year}
                   </SelectItem>

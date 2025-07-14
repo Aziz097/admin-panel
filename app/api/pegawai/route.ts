@@ -1,72 +1,83 @@
-import { NextResponse } from "next/server";
-// Menggunakan import yang sesuai dengan proyek Anda
+import { NextRequest, NextResponse } from "next/server";
+
 import prisma from "@/lib/prisma";
 
 /**
- * @swagger
- * /api/tahun:
- * get:
- * summary: Fetches all unique years from the database
- * description: Retrieves a sorted list of unique years from multiple tables.
- * responses:
- * 200:
- * description: A list of unique years.
- * content:
- * application/json:
+* @swagger
+ * /api/pegawai:
+* get:
+ * summary: Fetches employees
+ * description: >
+ * Retrieves a list of all employees, or a single employee if an 'id' query parameter is provided.
+ * parameters:
+ * - in: query
+ * name: id
  * schema:
- * type: array
- * items:
+ * type: integer
+ * required: false
+ * description: The ID of the employee to retrieve.
+* responses:
+* 200:
+ * description: A list of employees or a single employee object.
+* content:
+* application/json:
+* schema:
+* type: array
+* items:
+ * type: object
+ * properties:
+ * id:
+ * type: integer
+ * nama:
  * type: string
- * example: "2024"
- * 500:
- * description: Internal server error.
- */
-export async function GET() {
-  try {
-    // Menjalankan semua query secara bersamaan menggunakan 'prisma'
-    const [
-      attbTahun,
-      aoTahun,
-      akiTahun,
-      optimasiTahun,
-      kepatuhanTahun,
-      komunikasiTahun,
-      sertifikasiTahun,
-      tjslTahun,
-      ocrTahun,
-    ] = await Promise.all([
-      prisma.attb.findMany({ select: { tahun: true }, distinct: ["tahun"] }),
-      prisma.ao.findMany({ select: { tahun: true }, distinct: ["tahun"] }),
-      prisma.aki.findMany({ select: { tahun: true }, distinct: ["tahun"] }),
-      prisma.optimasi.findMany({ select: { tahun: true }, distinct: ["tahun"] }),
-      prisma.kepatuhan.findMany({ select: { tahun: true }, distinct: ["tahun"] }),
-      prisma.komunikasi.findMany({ select: { tahun: true }, distinct: ["tahun"] }),
-      prisma.sertifikasi.findMany({ select: { tahun: true }, distinct: ["tahun"] }),
-      prisma.tjsl.findMany({ select: { tahun: true }, distinct: ["tahun"] }),
-      prisma.ocr.findMany({ select: { tahun: true }, distinct: ["tahun"] }),
-    ]);
+ * nip:
+ * type: string
+ * jabatan:
+* type: string
+ * 400:
+ * description: Invalid ID format.
+ * 404:
+ * description: Employee not found.
+* 500:
+* description: Internal server error.
+*/
+export async function GET(req: NextRequest) {
+  // Extract search parameters from the request URL
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
 
-    // Gabungkan semua hasil menjadi satu array string
-    const semuaTahun = [
-      ...attbTahun.map(item => item.tahun),
-      ...aoTahun.map(item => item.tahun),
-      ...akiTahun.map(item => item.tahun),
-      ...optimasiTahun.map(item => item.tahun),
-      ...kepatuhanTahun.map(item => item.tahun),
-      ...komunikasiTahun.map(item => item.tahun),
-      ...sertifikasiTahun.map(item => item.tahun),
-      ...tjslTahun.map(item => item.tahun),
-      ...ocrTahun.map(item => item.tahun),
-    ];
+try {
+    // Scenario 1: Fetch a single employee by ID
+    if (id) {
+      // Convert the ID from string to number for Prisma query
+      const numericId = Number(id);
+      if (isNaN(numericId)) {
+        return NextResponse.json({ error: "Invalid ID format. ID must be a number." }, { status: 400 });
+      }
 
-    // Hapus duplikat dan urutkan dari terbaru ke terlama
-    const tahunUnik = [...new Set(semuaTahun)];
-    tahunUnik.sort((a, b) => b.localeCompare(a));
+      const pegawai = await prisma.pegawai.findUnique({
+        where: { id: numericId },
+      });
 
-    return NextResponse.json(tahunUnik);
+      // If no employee is found with the given ID, return a 404 error
+      if (!pegawai) {
+        return NextResponse.json({ error: "Pegawai not found" }, { status: 404 });
+      }
+    
+      // Return the found employee
+      return NextResponse.json(pegawai);
+    }
 
-  } catch (error) {
-    console.error("Error fetching 'tahun' data:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
-  }
-}
+    // Scenario 2: Fetch all employees if no ID is provided
+    const allPegawai = await prisma.pegawai.findMany();
+    return NextResponse.json(allPegawai);
+
+} catch (error) {
+    // Log the error for debugging purposes
+    console.error("Error fetching pegawai data:", error);
+    // Return a generic 500 internal server error response
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+}}
