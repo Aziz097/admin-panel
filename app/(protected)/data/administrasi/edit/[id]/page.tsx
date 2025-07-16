@@ -135,7 +135,7 @@ const INDIKATOR_KOMUNIKASI_OPTIONS = [
   "Share Berita Internal", "Scoring Publikasi", "Laporan Permintaan Publik",
 ];
 
-const KATEGORI_OCR_OPTIONS = ["KC", "COP", "KP", "Inovasi"];
+const KATEGORI_OCR_OPTIONS = ["KC", "COP", "KS", "Inovasi"];
 
 const getMonthName = (monthNum: string): string => {
   if (!monthNum) return "";

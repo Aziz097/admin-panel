@@ -53,7 +53,7 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
             dataForSemester = allDataForYear.filter(item => item.semester === semesterNumber);
         }
 
-        const aggregated = ["KC", "COP", "KP", "Inovasi"].map(kategori => {
+        const aggregated = ["KC", "COP", "KS", "Inovasi"].map(kategori => {
             const itemsForKategori = dataForSemester.filter(item => item.kategoriOCR === kategori);
             const totalTarget = itemsForKategori.reduce((sum, item) => sum + item.target, 0);
             const totalRealisasi = itemsForKategori.reduce((sum, item) => sum + (item.realisasi || 0), 0);

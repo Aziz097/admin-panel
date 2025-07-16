@@ -32,7 +32,7 @@ const INDIKATOR_KOMUNIKASI_OPTIONS = [
 ];
 
 // **BARU**: Opsi untuk Kategori OCR
-const KATEGORI_OCR_OPTIONS = ["KC", "COP", "KP", "Inovasi"];
+const KATEGORI_OCR_OPTIONS = ["KC", "COP", "KS", "Inovasi"];
 
 // **DIUBAH**: Menghapus field tjsl dan menambahkan field ocr
 const EMPTY_ROW = {

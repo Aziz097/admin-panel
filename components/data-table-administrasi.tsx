@@ -81,7 +81,7 @@ const INDIKATOR_KOMUNIKASI_OPTIONS = [
   "Release Berita", "Konten Foto", "Akun Influencer Aktif",
   "Share Berita Internal", "Scoring Publikasi", "Laporan Permintaan Publik",
 ];
-const KATEGORI_OCR_OPTIONS = ["KC", "COP", "KP", "Inovasi"];
+const KATEGORI_OCR_OPTIONS = ["KC", "COP", "KS", "Inovasi"];
 
 export function DataTable() {
   const searchParams = useSearchParams();

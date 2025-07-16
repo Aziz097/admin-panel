@@ -68,6 +68,10 @@ function calculateTotalKategori(dataPerTahun: { [category: string]: DataItem[] }
   });
 }
 
+function formatPersen(value: number) {
+  return `${value.toFixed(1)}%`
+}
+
 export function ChartAreaGradient({ tahun }: { tahun: string }) {
   const [dataPerTahun, setDataPerTahun] = useState<{ [category: string]: DataItem[] }>({});
   const [kategori, setKategori] = useState("Semua Uraian");
@@ -209,13 +213,19 @@ export function ChartAreaGradient({ tahun }: { tahun: string }) {
               tickMargin={8}
               tickFormatter={(value) => value.slice(0, 3)}
             />
-            {/* Removed Y-axis */}
+            
             <ChartTooltip
               cursor={false}
               content={({ payload, label }) => {
                 if (!payload?.length) return null;
                 const current = chartData.find((d) => d.month === label);
                 if (!current) return null;
+
+                const capaian =
+                  current.Penetapan > 0
+                    ? (current.Realisasi / current.Penetapan) * 100
+                    : 0;
+
                 return (
                   <div className="rounded-xl p-4 text-sm shadow-xl min-w-[220px] space-y-2 bg-white text-black">
                     {(["Penetapan", "Optimasi", "Realisasi"] as const).map((key) => (
@@ -232,6 +242,15 @@ export function ChartAreaGradient({ tahun }: { tahun: string }) {
                         </span>
                       </div>
                     ))}
+
+                    <hr className="my-2" />
+
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-semibold text-muted-foreground">Capaian</span>
+                      <span className="font-semibold tabular-nums">
+                        {formatPersen(capaian)}
+                      </span>
+                    </div>
                   </div>
                 );
               }}
