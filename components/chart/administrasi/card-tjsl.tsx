@@ -212,7 +212,7 @@ export function ChartRadialTjsl({ loading, chartData, semester, setSemester }: C
                 </Select>
             </div>
             
-            <div className="flex-1 flex items-center pb-0 mt-4 h-[150px]">
+            <div className="flex-1 flex items-center pb-0 mt-4 h-[150px] [&_*]:focus:outline-none">
                 <ChartContainer config={chartConfig} className="mx-auto aspect-square w-full max-w-[250px]">
                     <RadialBarChart
                         data={chartDisplayData}
@@ -249,7 +249,7 @@ export function ChartRadialTjsl({ loading, chartData, semester, setSemester }: C
                   }
                 }}
               />
-            </PolarRadiusAxis>
+                    </PolarRadiusAxis>
                         
                         <RadialBar
                             dataKey="realisasi"

@@ -114,7 +114,7 @@ export function ChartBarOCR({ tahun }: { tahun: string }) {
                 </div>
             </CardHeader>
             <CardContent>
-                <div className="h-[400px] w-[full]">
+                <div className="h-[400px] w-[full] [&_*]:focus:outline-none">
                     {isDataEmpty ? (
                         <div className="flex h-full w-full items-center justify-center text-muted-foreground">
                             <AlertCircle className="w-4 h-4 me-3" />

@@ -153,7 +153,7 @@ export function KepatuhanChart({ tahun }: { tahun: string }) {
                         {isDataEmpty ? (
                             <div className="flex h-full w-full items-center justify-center text-muted-foreground">Belum ada data untuk tahun {tahun}.</div>
                         ) : (
-                            <div className="w-full h-full flex flex-col">
+                            <div className="w-full h-full flex flex-col [&_*]:focus:outline-none">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} />

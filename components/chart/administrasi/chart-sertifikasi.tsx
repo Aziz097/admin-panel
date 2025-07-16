@@ -217,7 +217,7 @@ export function SertifikasiChart({ tahun }: { tahun: string }) {
           </div>
         </div>
         {/* Radial Chart */}
-        <div className="flex flex-col items-center justify-center w-full h-full">
+        <div className="flex flex-col items-center justify-center w-full h-full [&_*]:focus:outline-none">
           <div className="font-semibold text-base mb-6">Progress Sertifikasi</div>
           <RadialBarChart
             width={320}
